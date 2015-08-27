@@ -1,0 +1,6 @@
+Matthew Hruz
+Project 1 Log
+
+8/25/2015
+
+Began looking into the design for Project 1 using tips given in class today. Looked at a few programming languages but eventually decided on Python. Created all the code for Project 0. Learned a little bit of Pascal to get a brief introduction to the language I will be writing a Compiler for.
