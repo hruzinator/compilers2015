@@ -4,3 +4,33 @@ Project 1 Log
 8/25/2015
 
 Began looking into the design for Project 1 using tips given in class today. Looked at a few programming languages but eventually decided on Python. Created all the code for Project 0. Learned a little bit of Pascal to get a brief introduction to the language I will be writing a Compiler for.
+
+8/27/2015
+Reviewed the handouts. Diagrammed some Finite State Machines on a whiteboard and took pictures of them. 
+
+8/28/2015
+The general plan for project 1 is coming together. I plan on making a class for a Finite State Machine, and using it to make FSMs for the different token types.
+
+The functions for the FSM are:
+ 1) addState(name, handler, isEnd=False)
+	This function will add a node to the Finite state machine. Name is a string and is the unique identifier for the node. isEnd is a boolean value indicating whether or not the node is an end state. Handler is a function that returns the name of another node. It should be noted that the class will maintain a list of state names, and if a handler returns a name that is not in the class's list of state names at run-time, an error will occur, so it will be important to double check the handlers prior to running.
+
+ 2) setStart(name)
+	This sets what the start state is. It must be a state that has already been added by add_state()
+
+ 3) run(input)
+	This will take a bit of input and will start the Finite State Machine. The conditions must be correct for run to execute. If the start state has not yet been set, or none of the nodes is an end state, or even if there are no nodes, an exception will be raised.
+
+ 4) isRunning() (optional)
+	Returns a boolean value as to whether or not the FSM is running or not. Will add on a need-basis. As of right now this is optional.
+
+The fields for FSM are:
+ 1) states - A set of states
+
+Currently, main.py has two functions:
+	parse() - will eventually handle the parsing of tokens.
+	getHelp() - prints a little command-line help info.
+There is also a little bit of main function code which does project 0 work.
+
+8/30/2015
+Began writing code for FSM class. The design has changed a little bit. Took pictures of whiteboard design sketches.
