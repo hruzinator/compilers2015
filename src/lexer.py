@@ -79,10 +79,8 @@ class LexerFSM:
 			assert 'tokenType' in currentState and 'tokenStr' in currentState
 		elif type(currentState) is None:
 			print "Still working on this"
-			#TODO This FSM could not determine the token type
-		#token string is determined based on the placement of tokenIdx. We can also return what still needs to be parsed from this.
-		#TODO finish this by coding solution to multi-token per line scenarios.
-		print currentState
+		return currentState
+		#TODO indicate to rest of code what the unparsed chars are
 
 
 #define RELOP machine
@@ -110,3 +108,9 @@ relopMachine.setStart("__start__")
 lines=open('test.txt', 'r').readlines()
 for l in lines:
 	relopMachine.run(l)
+
+#define ID machine
+idMachine=lexerFSM()
+def handle(c):
+	assert type(c) is str and len(c)==1
+	#TODO if c is a letter, move to letters state
