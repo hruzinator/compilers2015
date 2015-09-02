@@ -92,6 +92,7 @@ Main code of lexer.py.
 #define module fields
 buff=[]
 buffPtr=0
+machines=[]
 
 #define RELOP machine
 relopMachine=LexerFSM()
@@ -123,8 +124,60 @@ def handle(c): #'>'
 		return {'tokenType': "RELOP", 'tokenStr':">"}
 relopMachine.addState(">", handle)
 relopMachine.setStart("__start__")
+machines.append(relopMachine)
+
+#define ID machine
+#TODO id too large?
+idMachine=LexerFSM()
+def handle(c): #start
+	assert type(c) is str and len(c)==1
+	#convert c to ascii number representation
+	l=ord(c)
+	#check if l is a capital or lowercase letter
+	if (65<=l<=90) or (97<=l<=122):
+		return  "letterNum"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+idMachine.addState("__start__", handle)
+def handle(c): #letterNum
+	assert type(c) is str and len(c)==1
+	ld=ord(c)
+	#check if ld is a letter
+	if (65<=ld<=90) or (97<=ld<=122):
+		return  "letterNum"
+	#check if ld is a number
+	if (48<=ld<=57):
+		return  "letterNum"
+	else:
+		#TODO symbol table
+		global buffPtr
+		buffPtr-=1
+		return {'tokenType':"ID", 'tokenStr':"TODO still working on this"}
+idMachine.addState("letterNum", handle)
+idMachine.setStart("__start__")
+machines.append(idMachine)
 
 #define module methods
+def tryMachine(machine):
+	global buff
+	global buffPtr
+	machine.start()
+	result=True
+	while result is True:
+		if buffPtr >= len(buff):
+			return None #TODO perhaps extra indication that buff is not empty, just waiting?
+		result=machine.feedChar(buff[buffPtr])
+		buffPtr+=1
+	if type(result) is dict:
+		buff=buff[buffPtr:]
+		buffPtr=0
+		return result
+	assert result is False #should be False when moving to next machine
+	buffPtr=0
+	return result
+
 def feedLexer(sourceString):
 	assert type(sourceString) is str
 	global buff
@@ -133,29 +186,23 @@ def feedLexer(sourceString):
 def getToken():
 	global buff
 	global buffPtr
+	global machines
 	if len(buff) is 0:
 		return None
-	#try relop machine
-	relopMachine.start()
-	result=True
-	while result is True:
-		if buffPtr >= len(buff):
-			return None #TODO perhaps extra indication that buff is not empty, just waiting?
-		result=relopMachine.feedChar(buff[buffPtr])
-		buffPtr+=1
-	if type(result) is dict:
-		buff=buff[buffPtr:]
-		buffPtr=0
-		return result
-	assert result is False #should be False when moving to next machine
-	buffPtr=0
-	
-	#all else fails, return LEXERR as token and continue
-	
-	#remove 1 element of buffer to move past bad char. TODO will this cause any errors?
-	print ord(buff[0])
-	buff=buff[1:]
-	return {'tokenType':"LEXERR", 'tokenStr':"Lexer could not determine token type"}
+
+	machineWorked=False
+	i=0
+	while machineWorked is False and i < len(machines):
+		machineWorked=tryMachine(machines[i])
+		i+=1
+	#false if all else fails
+	if machineWorked is False:
+		#remove 1 element of buffer to move past bad char. TODO will this cause any errors?
+		print ord(buff[0])
+		buff=buff[1:]
+		return {'tokenType':"LEXERR", 'tokenStr':"Lexer could not determine token type"}
+	assert type(machineWorked) is dict
+	return machineWorked
 
 
 '''
