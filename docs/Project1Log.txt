@@ -2,7 +2,6 @@ Matthew Hruz
 Project 1 Log
 
 8/25/2015
-
 Began looking into the design for Project 1 using tips given in class today. Looked at a few programming languages but eventually decided on Python. Created all the code for Project 0. Learned a little bit of Pascal to get a brief introduction to the language I will be writing a Compiler for.
 
 8/27/2015
@@ -12,8 +11,8 @@ Reviewed the handouts. Diagrammed some Finite State Machines on a whiteboard and
 The general plan for project 1 is coming together. I plan on making a class for a Finite State Machine, and using it to make FSMs for the different token types.
 
 The functions for the FSM are:
- 1) addState(name, handler, isEnd=False)
-	This function will add a node to the Finite state machine. Name is a string and is the unique identifier for the node. isEnd is a boolean value indicating whether or not the node is an end state. Handler is a function that returns the name of another node. It should be noted that the class will maintain a list of state names, and if a handler returns a name that is not in the class's list of state names at run-time, an error will occur, so it will be important to double check the handlers prior to running.
+ 1) addState(name, handler)
+	This function will add a node to the Finite state machine. Name is a string and is the unique identifier for the node. Handler is a function that will handle the transitions to new states, and will output the final result once a token has reached an end state. It should be noted that the class will maintain a list of state names, and if a handler tries to transition to a state name that is not in the class's list of state names at run-time, an error will occur, so it will be important to double check the handlers prior to running.
 
  2) setStart(name)
 	This sets what the start state is. It must be a state that has already been added by add_state()
@@ -33,4 +32,17 @@ Currently, main.py has two functions:
 There is also a little bit of main function code which does project 0 work.
 
 8/30/2015
-Began writing code for FSM class. The design has changed a little bit. Took pictures of whiteboard design sketches.
+Wrote code for FSM class. The design has changed a little bit. Took pictures of whiteboard design sketches. Currently, the FSM class works and Relational operators work, but only one token per line is processed (the buffer and pointers haven't been programmed yet).
+
+9/1/2015
+I Had to make some changes to the Lexer FSM class. The Finite State machine class should only accept one character at a time, rather than processing one line at a time. The previous way was a nice proof-of-concept that the Finite State machine works, but the lexer obviously can't work in this way. Instead of doing all the work in one call of run(), the lexer FSM will maintain a record of its current state, which is updated with every call to feedChar(char). These were the particular changes to the code:
+
+-removed run(). Migrated code to feedChar(char) and start(optional char)
+
++added feedChar(char). Takes in a character, passing it into the handler method for the current state. The handler will then be in charge of updating the state in the same manner as before, by returning the name of the next state. feedChar immediately checks the returned state for validity before returning True to indicate that the machine is still executing and waiting for a new state. Also, just as before, if the handler returns a python dictionary type, it is an indication that the token has been determined. feedChar() will terminate the execution of the finite state machine and return the token. If a handler returns NoneType then feedChar knows that the FSM cannot parse the token and returns False to indicate that the token type cannot be determined.
+
++added start(optional char). Start is similar to the older run() in that it is called to begin execution of the FSM, but in this case it will only check that the FSM is ready to begin accepting states, initalize the FSM's currentState with the startState, and set the new isRunning flag to True. char is an optional parameter that is set to None if no value is passed in. If char is not None, then a call to feedChar(char) is executed at the end of the start(char) method. Start() also resets the machine so a new instance does not need to be created.
+
+Additionally, as it is now more appropriate, i have added an isRunning field and an isRunning() getter method.
+
+This being done, I began planning the buffer. Since python has the luxury of concatenating arrays, I will be using a character array buffer that will add characters to the end of the array as they arrive and will remove characters from the beginning of the array as they are processed by the lexer. In this way the buffer will act more like a FIFO queue.

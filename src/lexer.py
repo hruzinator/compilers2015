@@ -9,7 +9,10 @@ class LexerFSM:
 		self.states = {}
 		self.startState = None
 		self.currentState = None
-		self.token_string = ""
+		self.isRunning = False
+
+	def isRunning(self):
+		return self.isRunning
 
 	#handler is a function type
 	def addState(self, name, handler):
@@ -37,12 +40,7 @@ class LexerFSM:
 			return
 		self.startState=name
 
-	def run(self, inLine):
-		#input validation
-		if type(inLine) is not str:
-			raise TypeError("trying to run a lexer FSM with an input string not of type string")
-			return
-
+	def start(self, char=None):
 		#begin by checking that inital conditions are ok for starting the machine
 		if len(self.states) == 0:
 			print "States must be added with addState(), and a startState needs to be defined, before the Finite State Machine can run"
@@ -51,37 +49,45 @@ class LexerFSM:
 			print "Error! Cannot run until the startState has been defined with setStart"
 			return
 
-		#initialize the run function
-		currentState=self.startState
-		tokenIdx=0
+		#initialize the machine
+		self.currentState=self.startState
+		self.isRunning=True
+		if type(char) is not NoneType:
+			feedChar(char)
 
-		while type(currentState) is str:
-			#make sure currentState is a valid state
-			if currentState not in self.states:
-				raise KeyError("A lexer FSM tried to go to a state that doesn't exist ("+currentState+")")
+	def feedChar(self, char):
+		assert(self.isRunning)
+		#input validation
+		if type(char) is not str or len(char) is not 1:
+			raise TypeError("trying to feedChar in lexer without a string of length 1 (a char)")
+			return
 
-			#make sure there is more line to parse
-			try:
-				c=inLine[tokenIdx]
-				tokenIdx+=1
-			except IndexError: #TODO is exception the best way to handle this?
-				print "Error! Line ended before end of token"
-				return {'tokenType':"LEXERR", 'tokenStr':"End of line before end of token"}
-			currentState=self.states[currentState](c)
+		newState=self.states[self.currentState](char)
 		
-		'''
-		once we exit the loop (when currentState isn't a string), it means that we have exited the FSM.
-		We now check to make sure currentState is a token (properly-formed dictionary returned), or if 
-		the FSM just couldn't parse the string. If neither are the case, there was a program error.
-		'''
-		assert type(currentState) is dict or type(currentState) is NoneType
-		if type(currentState) is dict:
-			assert 'tokenType' in currentState and 'tokenStr' in currentState
-		elif type(currentState) is None:
-			print "Still working on this"
-		return currentState
-		#TODO indicate to rest of code what the unparsed chars are
+		if type(newState) is str:
+			#newState is indeed a new state
+			#make sure currentState is a valid state
+			if self.currentState not in self.states:
+				raise KeyError("A lexer FSM tried to go to a state that doesn't exist ("+currentState+")")
+				assert(False)
+			self.currentState=newState
+			return True
 
+		if type(newState) is dict:
+			#the FSM has found a valid token. NewState holds that token
+			assert 'tokenType' in newState and 'tokenStr' in newState
+			self.isRunning=False
+			return newState
+		
+		if type(newState) is NoneType:
+			#the FSM cannot determine the token type
+			self.isRunning=False
+			return False
+#end lexerFSM class
+
+'''
+Main code of lexer.py.
+'''
 
 #define RELOP machine
 relopMachine=LexerFSM()
@@ -90,7 +96,7 @@ def handle(c): #''
 	if c == '<': return '<'
 	if c == '>': return '>'
 	if c == '=': return {'tokenType': "RELOP", 'tokenStr':"="}
-	else: return None #TODO plan. If FSM does not "fit the bill"
+	else: return None #FSM has determined the current token is not a relational operator
 relopMachine.addState("__start__", handle)
 def handle(c): #'<'
 	assert type(c) is str and len(c)==1
@@ -104,13 +110,61 @@ def handle(c): #'>'
 	else: return {'tokenType': "RELOP", 'tokenStr':">"}
 relopMachine.addState(">", handle)
 relopMachine.setStart("__start__")
-'''for the sake of testing, we will use file to see what happens here'''
-lines=open('test.txt', 'r').readlines()
-for l in lines:
-	relopMachine.run(l)
 
+'''
 #define ID machine
 idMachine=lexerFSM()
 def handle(c):
 	assert type(c) is str and len(c)==1
 	#TODO if c is a letter, move to letters state
+'''
+
+#define module fields
+buff=[]
+buffPtr=0
+
+#define module methods
+def feedLexer(sourceString):
+	assert type(sourceString) is str
+	global buff
+	buff+=list(sourceString)
+
+def getToken():
+	global buff
+	global buffPtr
+	if len(buff) is 0:
+		return None
+	#try relop machine
+	relopMachine.start()
+	result=True
+	while result is True:
+		if buffPtr >= len(buff):
+			return None #TODO perhaps extra indication that buff is not empty, just waiting?
+		result=relopMachine.feedChar(buff[buffPtr])
+		buffPtr+=1
+	if type(result) is dict:
+		buff=buff[buffPtr:]
+		buffPtr=0
+		return result
+	assert result is False #should be False when moving to next machine
+	buffPtr=0
+	
+	#all else fails, return LEXERR as token and continue
+	
+	#remove 1 element of buffer to move past bad char. TODO will this cause any errors?
+	print ord(buff[0])
+	buff=buff[1:]
+	return {'tokenType':"LEXERR", 'tokenStr':"Lexer could not determine token type"}
+
+
+'''
+The code below is for testing only. Remove before submission
+'''
+lines=open("test.txt", 'r').readlines()
+for l in lines:
+	feedLexer(l)
+	result=getToken()
+	while result is not None:
+		assert type(result) is dict
+		print result
+		result=getToken()
