@@ -89,6 +89,10 @@ class LexerFSM:
 Main code of lexer.py.
 '''
 
+#define module fields
+buff=[]
+buffPtr=0
+
 #define RELOP machine
 relopMachine=LexerFSM()
 def handle(c): #''
@@ -96,32 +100,29 @@ def handle(c): #''
 	if c == '<': return '<'
 	if c == '>': return '>'
 	if c == '=': return {'tokenType': "RELOP", 'tokenStr':"="}
-	else: return None #FSM has determined the current token is not a relational operator
+	else: 
+		global buffPtr
+		buffPtr-=1 #we saw another charachter, so buffPtr needs to be moved back 1
+		return None #FSM has determined the current token is not a relational operator
 relopMachine.addState("__start__", handle)
 def handle(c): #'<'
 	assert type(c) is str and len(c)==1
 	if c == '>': return {'tokenType': "RELOP", 'tokenStr':"<>"}
 	if c == '=': return {'tokenType': "RELOP", 'tokenStr':"<="}
-	else: return {'tokenType': "RELOP", 'tokenStr':"<"}
+	else:
+		global buffPtr
+		buffPtr-=1 
+		return {'tokenType': "RELOP", 'tokenStr':"<"}
 relopMachine.addState("<", handle)
 def handle(c): #'>'
 	assert type(c) is str and len(c)==1
 	if c == '=': return {'tokenType': "RELOP", 'tokenStr':">="}
-	else: return {'tokenType': "RELOP", 'tokenStr':">"}
+	else: 
+		global buffPtr
+		buffPtr-=1
+		return {'tokenType': "RELOP", 'tokenStr':">"}
 relopMachine.addState(">", handle)
 relopMachine.setStart("__start__")
-
-'''
-#define ID machine
-idMachine=lexerFSM()
-def handle(c):
-	assert type(c) is str and len(c)==1
-	#TODO if c is a letter, move to letters state
-'''
-
-#define module fields
-buff=[]
-buffPtr=0
 
 #define module methods
 def feedLexer(sourceString):

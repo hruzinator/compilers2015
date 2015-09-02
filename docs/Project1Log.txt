@@ -46,3 +46,6 @@ I Had to make some changes to the Lexer FSM class. The Finite State machine clas
 Additionally, as it is now more appropriate, i have added an isRunning field and an isRunning() getter method.
 
 This being done, I began planning the buffer. Since python has the luxury of concatenating arrays, I will be using a character array buffer that will add characters to the end of the array as they arrive and will remove characters from the beginning of the array as they are processed by the lexer. In this way the buffer will act more like a FIFO queue.
+
+9/2/2015
+Fixed a bug with the buffer. In some circumstances (e.g. the relational operator <=), the token type can be determined without looking ahead to an "other" character". For some reason this was assummed and it was causing issues with the lexical analyzer. Handlers are now in charge of moving the bufferPtr back if they look a character or two too far.
