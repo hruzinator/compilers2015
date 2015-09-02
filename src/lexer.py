@@ -92,7 +92,7 @@ Main code of lexer.py.
 #define module fields
 buff=[]
 buffPtr=0
-machines=[]
+machines=[] #order is important. Make sure machines are priority ordered
 
 #define RELOP machine
 relopMachine=LexerFSM()
@@ -153,11 +153,30 @@ def handle(c): #letterNum
 	else:
 		#TODO symbol table
 		global buffPtr
+		global buff
+		lexeme="".join(buff[:buffPtr])
 		buffPtr-=1
-		return {'tokenType':"ID", 'tokenStr':"TODO still working on this"}
+		return {'tokenType':"ID", 'tokenStr':lexeme}
 idMachine.addState("letterNum", handle)
 idMachine.setStart("__start__")
 machines.append(idMachine)
+
+#define whitespace machine
+whitespaceMachine=LexerFSM()
+def handle(c):
+	assert type(c) is str and len(c)==1
+	#TODO may just want whitespace only. Not the different types of space.
+	if c is ' ': return {'tokenType':"Whitespace", 'tokenStr':"space"}
+	if c is '\t': return {'tokenType':"Whitespace", 'tokenStr':"tab"}
+	if c is '\n': return {'tokenType':"Whitespace", 'tokenStr':"linefeed"}
+	if c is '\b': return {'tokenType':"Whitespace", 'tokenStr':"backspace"}
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+whitespaceMachine.addState("__start__", handle)
+whitespaceMachine.setStart("__start__")
+machines.append(whitespaceMachine)
 
 #define module methods
 def tryMachine(machine):
