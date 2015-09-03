@@ -99,8 +99,8 @@ relopMachine=LexerFSM()
 def handle(c): #''
 	assert type(c) is str and len(c)==1
 	if c == '<': return '<'
-	if c == '>': return '>'
-	if c == '=': return {'tokenType': "RELOP", 'tokenStr':"="}
+	elif c == '>': return '>'
+	elif c == '=': return {'tokenType': "RELOP", 'tokenStr':"="}
 	else: 
 		global buffPtr
 		buffPtr-=1 #we saw another charachter, so buffPtr needs to be moved back 1
@@ -109,7 +109,7 @@ relopMachine.addState("__start__", handle)
 def handle(c): #'<'
 	assert type(c) is str and len(c)==1
 	if c == '>': return {'tokenType': "RELOP", 'tokenStr':"<>"}
-	if c == '=': return {'tokenType': "RELOP", 'tokenStr':"<="}
+	elif c == '=': return {'tokenType': "RELOP", 'tokenStr':"<="}
 	else:
 		global buffPtr
 		buffPtr-=1 
@@ -148,7 +148,7 @@ def handle(c): #letterNum
 	if (65<=ld<=90) or (97<=ld<=122):
 		return  "letterNum"
 	#check if ld is a number
-	if (48<=ld<=57):
+	elif (48<=ld<=57):
 		return  "letterNum"
 	else:
 		#TODO symbol table
@@ -162,21 +162,33 @@ idMachine.setStart("__start__")
 machines.append(idMachine)
 
 #define whitespace machine
-whitespaceMachine=LexerFSM()
+wsMachine=LexerFSM()
 def handle(c):
 	assert type(c) is str and len(c)==1
 	#TODO may just want whitespace only. Not the different types of space.
 	if c is ' ': return {'tokenType':"Whitespace", 'tokenStr':"space"}
-	if c is '\t': return {'tokenType':"Whitespace", 'tokenStr':"tab"}
-	if c is '\n': return {'tokenType':"Whitespace", 'tokenStr':"linefeed"}
-	if c is '\b': return {'tokenType':"Whitespace", 'tokenStr':"backspace"}
+	elif c is '\t': return {'tokenType':"Whitespace", 'tokenStr':"tab"}
+	elif c is '\b': return {'tokenType':"Whitespace", 'tokenStr':"backspace"}
 	else:
 		global buffPtr
 		buffPtr-=1
 		return None
-whitespaceMachine.addState("__start__", handle)
-whitespaceMachine.setStart("__start__")
-machines.append(whitespaceMachine)
+wsMachine.addState("__start__", handle)
+wsMachine.setStart("__start__")
+machines.append(wsMachine)
+
+#define newline manchine
+nlMachine=LexerFSM()
+def handle(c):
+	assert type(c) is str and len(c)==1
+	if ord(c) is 10: return {'tokenType':"Newline", 'tokenStr':"linefeed newline"}
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+nlMachine.addState("__start__", handle)
+nlMachine.setStart("__start__")
+machines.append(nlMachine)
 
 #define module methods
 def tryMachine(machine):
@@ -217,7 +229,7 @@ def getToken():
 	#false if all else fails
 	if machineWorked is False:
 		#remove 1 element of buffer to move past bad char. TODO will this cause any errors?
-		print ord(buff[0])
+		print str(buff[0:1]) + " " + str(ord(buff[0])) #TODO remove at end
 		buff=buff[1:]
 		return {'tokenType':"LEXERR", 'tokenStr':"Lexer could not determine token type"}
 	assert type(machineWorked) is dict
