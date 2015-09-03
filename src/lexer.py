@@ -127,7 +127,7 @@ relopMachine.setStart("__start__")
 machines.append(relopMachine)
 
 #define ID machine
-#TODO id too large?
+#TODO implement restrictions on the size of ID
 idMachine=LexerFSM()
 def handle(c): #start
 	assert type(c) is str and len(c)==1
@@ -194,9 +194,9 @@ machines.append(nlMachine)
 
 #TODO define longreal machine (must be before reals to ensure we don't premeturely tokenize a real out of a longreal)
 lrMachine=LexerFSM()
-def handle(c):
+def handle(c): #start
 	assert type(c) is str and len(c)==1
-	x=ord(c)
+	d=ord(c)
 	#check if d is a number
 	if (48<=d<=57):
 		return  "x"
@@ -204,9 +204,48 @@ def handle(c):
 		global buffPtr
 		buffPtr-=1
 		return None
+lrMachine.addState("__start__", handle)
+def handle(c):#x
+	assert type(c) is str and len(c)==1
+	d=ord(c)
+	#check if d is a number
+	if (48<=d<=57):
+		return  "x"
+	elif c is '.':
+		return "y"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
 lrMachine.addState("x", handle)
-lrMachine.setStart("x")
-
+def handle(c):#y
+	assert type(c) is str and len(c)==1
+	d=ord(c)
+	#check if d is a number
+	if (48<=d<=57):
+		return  "y"
+	elif c is 'e':
+		return "z"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+lrMachine.addState("y", handle)
+def handle(c):#z
+	assert type(c) is str and len(c)==1
+	d=ord(c)
+	#check if d is a number
+	if (48<=d<=57):
+		return  "z"
+	else:
+		global buffPtr
+		global buff
+		lexeme="".join(buff[:buffPtr])
+		buffPtr-=1
+		return {'tokenType':"LONGREAL", 'tokenStr':lexeme}
+lrMachine.addState("z", handle)
+lrMachine.setStart("__start__")
+machines.append(lrMachine)
 
 #TODO define reals machine (must be before ints to ensure we don't ppremeturely tokenize an int out of a real)
 
