@@ -248,6 +248,46 @@ lrMachine.setStart("__start__")
 machines.append(lrMachine)
 
 #TODO define reals machine (must be before ints to ensure we don't ppremeturely tokenize an int out of a real)
+rMachine=LexerFSM()
+def handle(c): #start
+	assert type(c) is str and len(c)==1
+	d=ord(c)
+	#check if d is a number
+	if (48<=d<=57):
+		return  "x"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+rMachine.addState("__start__", handle)
+def handle(c):#x
+	assert type(c) is str and len(c)==1
+	d=ord(c)
+	#check if d is a number
+	if (48<=d<=57):
+		return  "x"
+	elif c is '.':
+		return "y"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+rMachine.addState("x", handle)
+def handle(c):#y
+	assert type(c) is str and len(c)==1
+	d=ord(c)
+	#check if d is a number
+	if (48<=d<=57):
+		return  "y"
+	else:
+		global buffPtr
+		global buff
+		lexeme="".join(buff[:buffPtr])
+		buffPtr-=1
+		return {'tokenType':"REAL", 'tokenStr':lexeme}
+rMachine.addState("y", handle)
+rMachine.setStart("__start__")
+machines.append(rMachine)
 
 #TODO define int machine
 intMachine=LexerFSM()
