@@ -192,7 +192,7 @@ nlMachine.setStart("__start__")
 machines.append(nlMachine)
 
 
-#TODO define longreal machine (must be before reals to ensure we don't premeturely tokenize a real out of a longreal)
+#define longreal machine (must be before reals to ensure we don't premeturely tokenize a real out of a longreal)
 lrMachine=LexerFSM()
 def handle(c): #start
 	assert type(c) is str and len(c)==1
@@ -247,7 +247,7 @@ lrMachine.addState("z", handle)
 lrMachine.setStart("__start__")
 machines.append(lrMachine)
 
-#TODO define reals machine (must be before ints to ensure we don't ppremeturely tokenize an int out of a real)
+#define reals machine (must be before ints to ensure we don't ppremeturely tokenize an int out of a real)
 rMachine=LexerFSM()
 def handle(c): #start
 	assert type(c) is str and len(c)==1
@@ -289,7 +289,7 @@ rMachine.addState("y", handle)
 rMachine.setStart("__start__")
 machines.append(rMachine)
 
-#TODO define int machine
+#define int machine
 intMachine=LexerFSM()
 def handle(c):
 	assert type(c) is str and len(c)==1
