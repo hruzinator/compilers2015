@@ -182,6 +182,7 @@ nlMachine=LexerFSM()
 def handle(c):
 	assert type(c) is str and len(c)==1
 	if ord(c) is 10: return {'tokenType':"Newline", 'tokenStr':"linefeed newline"}
+	#TODO more for different OS types? (namely, Windows, and the unicode encoding?)
 	else:
 		global buffPtr
 		buffPtr-=1
@@ -189,6 +190,53 @@ def handle(c):
 nlMachine.addState("__start__", handle)
 nlMachine.setStart("__start__")
 machines.append(nlMachine)
+
+
+#TODO define longreal machine (must be before reals to ensure we don't premeturely tokenize a real out of a longreal)
+lrMachine=LexerFSM()
+def handle(c):
+	assert type(c) is str and len(c)==1
+	x=ord(c)
+	#check if d is a number
+	if (48<=d<=57):
+		return  "x"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+lrMachine.addState("x", handle)
+lrMachine.setStart("x")
+
+
+#TODO define reals machine (must be before ints to ensure we don't ppremeturely tokenize an int out of a real)
+
+#TODO define int machine
+intMachine=LexerFSM()
+def handle(c):
+	assert type(c) is str and len(c)==1
+	d=ord(c)
+	if (48<=d<=57):
+		return "num"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+intMachine.addState("__start__", handle)
+def handle(c):
+	assert type(c) is str and len(c)==1
+	d=ord(c)
+	#check if d is a number
+	if (48<=d<=57):
+		return  "num"
+	else:
+		global buffPtr
+		global buff
+		lexeme="".join(buff[0:buffPtr])
+		buffPtr-=1
+		return {'tokenType':"INTEGER", 'tokenStr':lexeme}
+intMachine.addState("num", handle)
+intMachine.setStart("__start__")
+machines.append(intMachine)
 
 #define module methods
 def tryMachine(machine):
