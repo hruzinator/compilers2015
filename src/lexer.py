@@ -20,15 +20,15 @@ class LexerFSM:
 		if type(name) is not str:
 			raise TypeErr("Argument \'name\' in addState must be of type string")
 			return
-		
+
 		if type(handler) is not FunctionType:
 			raise TypeErr("Argument \'handler\' in addState must be of type function")
 			return
-		
+
 		if name in self.states:
 			print "Warning! Adding state that already exists. This replaces the old state"
 		self.states[name]=handler
-	
+
 	def setStart(self, name):
 		#input validation
 		if type(name) is not str:
@@ -63,7 +63,7 @@ class LexerFSM:
 			return
 
 		newState=self.states[self.currentState](char)
-		
+
 		if type(newState) is str:
 			#newState is indeed a new state
 			#make sure currentState is a valid state
@@ -78,7 +78,7 @@ class LexerFSM:
 			assert 'tokenType' in newState and 'tokenStr' in newState
 			self.isRunning=False
 			return newState
-		
+
 		if type(newState) is NoneType:
 			#the FSM cannot determine the token type
 			self.isRunning=False
@@ -101,7 +101,7 @@ def handle(c): #''
 	if c == '<': return '<'
 	elif c == '>': return '>'
 	elif c == '=': return {'tokenType': "RELOP", 'tokenStr':"="}
-	else: 
+	else:
 		global buffPtr
 		buffPtr-=1 #we saw another charachter, so buffPtr needs to be moved back 1
 		return None #FSM has determined the current token is not a relational operator
@@ -112,19 +112,134 @@ def handle(c): #'<'
 	elif c == '=': return {'tokenType': "RELOP", 'tokenStr':"<="}
 	else:
 		global buffPtr
-		buffPtr-=1 
+		buffPtr-=1
 		return {'tokenType': "RELOP", 'tokenStr':"<"}
 relopMachine.addState("<", handle)
 def handle(c): #'>'
 	assert type(c) is str and len(c)==1
 	if c == '=': return {'tokenType': "RELOP", 'tokenStr':">="}
-	else: 
+	else:
 		global buffPtr
 		buffPtr-=1
 		return {'tokenType': "RELOP", 'tokenStr':">"}
 relopMachine.addState(">", handle)
 relopMachine.setStart("__start__")
 machines.append(relopMachine)
+
+#define assignOp machine
+assignopMachine=LexerFSM()
+def handle(c):
+    assert type(c) is str and len(c)==1
+    if c == ":": return ":"
+    else:
+        global buffPtr
+        buffPtr-=1
+        return None
+assignopMachine.addState("__start__", handle)
+def handle(c):#":"
+    assert type(c) is str and len(c)==1
+    if c == "=": return {'tokenType': "ASSIGNOP", 'tokenStr':":="}
+    else:
+        global buffPtr
+        buffPtr-=2
+        return None
+assignopMachine.addState(":", handle)
+assignopMachine.setStart("__start__")
+machines.append(assignopMachine)
+
+#define addOp machine
+addopMachine=LexerFSM()
+def handle(c):
+    assert type(c) is str and len(c)==1
+    if c == '+': return {'tokenType': "ADDOP", 'tokenStr':'+'}
+    elif c == '-': return {'tokenType':"ADDOP", 'tokenStr':"-"}
+    elif c == 'o' : return "o"
+    else:
+        global buffPtr
+        buffPtr-=1
+        return None
+addopMachine.addState("__start__", handle)
+def handle(c):#'o'
+    assert type(c) is str and len(c)==1
+    if c == 'r': return "or" 
+    else: #what we thought was an or really wasn't an or
+        global buffPtr
+        buffPtr-=2 #go back to o
+        return None
+addopMachine.addState("o", handle)
+def handle(c):#'or' -> must make sure word ends (i.e. oreo is technically an ID or reserved word)
+    assert type(c) is str and len(c)==1
+    #check to see if the next char is a letter
+    if (65<=ord(c)<=90) or (97<=ord(c)<=122): 
+        global buffPtr
+        buffPtr-=3
+        return None
+    else:
+        return {'tokenType': "ADDOP", 'tokenStr':'or'}
+addopMachine.addState("or", handle)
+addopMachine.setStart("__start__")
+machines.append(addopMachine)
+
+#define multOp machine
+multopMachine=LexerFSM()
+def handle(c):
+    assert type(c) is str and len(c)==1
+    if c == '*': return {'tokenType': "MULTOP", 'tokenStr':'*'}
+    elif c == '/': return {'tokenType':"multop", 'tokenStr':"/"}
+    elif c == 'd' :#handle it all here to reduce excess code 
+        global buff
+        global buffPtr
+        if buffPtr+3>=len(buff):
+            return None
+        if buff[buffPtr+1] == 'i' and buff[buffPtr+2] == 'v':
+            #make sure next char is not another a-z or A-Z
+            l=ord(buff[buffPtr+3])
+	    if (65<=l<=90) or (97<=l<=122):
+                buffPtr-=2
+                return None
+            buffPtr+=2
+            return {'tokenType':"multop", 'tokenStr':"/"}
+        else:
+            buffPtr-=1
+            return None
+    elif c == 'm' :#handle it all here to reduce excess code 
+        global buff
+        global buffPtr
+        if buffPtr+3>=len(buff):
+            return None
+        if buff[buffPtr+1] == 'o' and buff[buffPtr+2] == 'd':
+            #make sure next char is not another a-z or A-Z
+            l=ord(buff[buffPtr+3])
+	    if (65<=l<=90) or (97<=l<=122):
+                buffPtr-=2
+                return None
+            buffPtr+=2
+            return {'tokenType':"multop", 'tokenStr':"mod"}
+        else:
+            buffPtr-=1
+            return None
+    elif c == 'a' :#handle it all here to reduce excess code 
+        global buff
+        global buffPtr
+        if buffPtr+3>=len(buff):
+            return None
+        if buff[buffPtr+1] == 'n' and buff[buffPtr+2] == 'd':
+            #make sure next char is not another a-z or A-Z
+            l=ord(buff[buffPtr+3])
+	    if (65<=l<=90) or (97<=l<=122):
+                buffPtr-=2
+                return None
+            buffPtr+=2
+            return {'tokenType':"multop", 'tokenStr':"and"}
+        else:
+            buffPtr-=1
+            return None
+    else:
+        buffPtr-=1
+        return None
+multopMachine.addState("__start__", handle)
+multopMachine.setStart("__start__")
+machines.append(multopMachine)
 
 #define ID machine
 #TODO implement restrictions on the size of ID
