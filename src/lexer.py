@@ -11,9 +11,6 @@ class LexerFSM:
 		self.currentState = None
 		self.isRunning = False
 
-	def isRunning(self):
-		return self.isRunning
-
 	#handler is a function type
 	def addState(self, name, handler):
 		#input validation
