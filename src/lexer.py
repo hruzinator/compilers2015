@@ -449,6 +449,10 @@ def feedLexer(sourceString):
     global buff
     buff+=list(sourceString)
 
+# Get the next token
+#returns:
+#   None if there are no complete tokens in the buffer
+#   The three tuple of the next token if the next token exists
 def getToken():
     global buff
     global buffPtr
@@ -464,7 +468,6 @@ def getToken():
     #false if all else fails
     if machineWorked is False:
         #remove 1 element of buffer to move past bad char. TODO will this cause any errors?
-        print str(buff[0:1]) + " " + str(ord(buff[0])) #TODO remove at end
         buff=buff[1:]
         return {'tokenType':"LEXERR", 'tokenStr':"Lexer could not determine token type"}
     assert type(machineWorked) is dict
@@ -472,6 +475,7 @@ def getToken():
 
 '''
 The code below is for testing only. Remove before submission
+'''
 '''
 lines=open("test.txt", 'r').readlines()
 for l in lines:
@@ -481,3 +485,4 @@ for l in lines:
         assert type(result) is dict
         print result
         result=getToken()
+'''

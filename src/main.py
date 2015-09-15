@@ -12,14 +12,9 @@ source file and output each line with a line number associated with it.
 import sys
 import lexer
 
-def parse():
-    x = gettoken()
-    #loop while type of token is not end of file
-    print x
-
 def printHelp():
     print "Usage:"
-    print "python inputHandler.py sourceFile"
+    print "python main.py sourceFile"
 
 #process args and begin process
 if len(sys.argv) is not 2:
@@ -33,4 +28,9 @@ listingFile = open('lineListing.txt', 'w')
 
 for l in lines:
     listingFile.write(str(lineNum) + ": " + l[:-1] + '\n')
+    lexer.feedLexer(l)
+    nextToken=lexer.getToken()
+    while nextToken is not None:
+        print nextToken
+        nextToken=lexer.getToken()
     lineNum+=1
