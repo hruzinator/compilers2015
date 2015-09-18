@@ -72,7 +72,7 @@ class LexerFSM:
 
         if type(newState) is dict:
             #the FSM has found a valid token. NewState holds that token
-            assert 'tokenType' in newState and 'tokenStr' in newState
+            assert 'tokenType' in newState and 'lexeme' in newState and 'attribute' in newState
             self.isRunning=False
             return newState
 
@@ -97,7 +97,7 @@ def handle(c): #''
     assert type(c) is str and len(c)==1
     if c == '<': return '<'
     elif c == '>': return '>'
-    elif c == '=': return {'tokenType': "RELOP", 'tokenStr':"="}
+    elif c == '=': return {'tokenType': "RELOP", 'lexeme':"=", 'attribute':"equals"}
     else:
         global buffPtr
         buffPtr-=1 #we saw another charachter, so buffPtr needs to be moved back 1
@@ -105,20 +105,20 @@ def handle(c): #''
 relopMachine.addState("__start__", handle)
 def handle(c): #'<'
     assert type(c) is str and len(c)==1
-    if c == '>': return {'tokenType': "RELOP", 'tokenStr':"<>"}
-    elif c == '=': return {'tokenType': "RELOP", 'tokenStr':"<="}
+    if c == '>': return {'tokenType': "RELOP", 'lexeme':"<>", 'attribute':"not equals"}
+    elif c == '=': return {'tokenType': "RELOP", 'lexeme':"<=", 'attribute':"less than or equals"}
     else:
         global buffPtr
         buffPtr-=1
-        return {'tokenType': "RELOP", 'tokenStr':"<"}
+        return {'tokenType': "RELOP", 'lexeme':"<", 'attribute':"less than"}
 relopMachine.addState("<", handle)
 def handle(c): #'>'
     assert type(c) is str and len(c)==1
-    if c == '=': return {'tokenType': "RELOP", 'tokenStr':">="}
+    if c == '=': return {'tokenType': "RELOP", 'lexeme':">=", 'attribute':"greater than or equals"}
     else:
         global buffPtr
         buffPtr-=1
-        return {'tokenType': "RELOP", 'tokenStr':">"}
+        return {'tokenType': "RELOP", 'lexeme':">", 'attribute':"greater than"}
 relopMachine.addState(">", handle)
 relopMachine.setStart("__start__")
 machines.append(relopMachine)
@@ -135,7 +135,7 @@ def handle(c):
 assignopMachine.addState("__start__", handle)
 def handle(c):#":"
     assert type(c) is str and len(c)==1
-    if c == "=": return {'tokenType': "ASSIGNOP", 'tokenStr':":="}
+    if c == "=": return {'tokenType': "ASSIGNOP", 'lexeme':":=", 'attribute':"assign to"}
     else:
         global buffPtr
         buffPtr-=2
@@ -148,8 +148,8 @@ machines.append(assignopMachine)
 addopMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
-    if c == '+': return {'tokenType': "ADDOP", 'tokenStr':'+'}
-    elif c == '-': return {'tokenType':"ADDOP", 'tokenStr':"-"}
+    if c == '+': return {'tokenType': "ADDOP", 'lexeme':'+', 'attribute':"add"}
+    elif c == '-': return {'tokenType':"ADDOP", 'lexeme':"-", 'attribute':"subtract"}
     elif c == 'o' : return "o"
     else:
         global buffPtr
@@ -172,7 +172,7 @@ def handle(c):#'or' -> must make sure word ends (i.e. oreo is technically an ID 
         buffPtr-=3
         return None
     else:
-        return {'tokenType': "ADDOP", 'tokenStr':'or'}
+        return {'tokenType': "ADDOP", 'lexeme':'or', 'attribute':"logical or"}
 addopMachine.addState("or", handle)
 addopMachine.setStart("__start__")
 machines.append(addopMachine)
@@ -183,8 +183,8 @@ def handle(c):
     global buff
     global buffPtr
     assert type(c) is str and len(c)==1
-    if c == '*': return {'tokenType': "MULTOP", 'tokenStr':'*'}
-    elif c == '/': return {'tokenType':"multop", 'tokenStr':"/"}
+    if c == '*': return {'tokenType': "MULTOP", 'lexeme':'*'}
+    elif c == '/': return {'tokenType':"multop", 'lexeme':"/"}
     elif c == 'd': #handle it all here to reduce excess code
         if buffPtr+3>=len(buff):
             return None
@@ -195,7 +195,7 @@ def handle(c):
                 buffPtr-=2
                 return None
             buffPtr+=2
-            return {'tokenType':"multop", 'tokenStr':"/"}
+            return {'tokenType':"multop", 'lexeme':"/"}
         else:
             buffPtr-=1
             return None
@@ -209,7 +209,7 @@ def handle(c):
                 buffPtr-=2
                 return None
             buffPtr+=2
-            return {'tokenType':"multop", 'tokenStr':"mod"}
+            return {'tokenType':"multop", 'lexeme':"mod", 'attribute':"modulus"}
         else:
             buffPtr-=1
             return None
@@ -223,7 +223,7 @@ def handle(c):
                 buffPtr-=2
                 return None
             buffPtr+=2
-            return {'tokenType':"multop", 'tokenStr':"and"}
+            return {'tokenType':"multop", 'lexeme':"and", 'attribute':"logical and"}
         else:
             buffPtr-=1
             return None
@@ -264,7 +264,7 @@ def handle(c): #letterNum
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-        return {'tokenType':"ID", 'tokenStr':lexeme}
+        return {'tokenType':"ID", 'lexeme':lexeme, 'attribute':"Soooo...a ptr to table value will go here"} #TODO attribute will be a ptr to the symbol table value
 idMachine.addState("letterNum", handle)
 idMachine.setStart("__start__")
 machines.append(idMachine)
@@ -274,9 +274,9 @@ wsMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
     #TODO may just want whitespace only. Not the different types of space.
-    if c is ' ': return {'tokenType':"Whitespace", 'tokenStr':"space"}
-    elif c is '\t': return {'tokenType':"Whitespace", 'tokenStr':"tab"}
-    elif c is '\b': return {'tokenType':"Whitespace", 'tokenStr':"backspace"}
+    if c is ' ': return {'tokenType':"Whitespace", 'lexeme':" ", 'attribute':"space"}
+    elif c is '\t': return {'tokenType':"Whitespace", 'lexeme':"\t" , 'attribute':"tab"}
+    elif c is '\b': return {'tokenType':"Whitespace", 'lexeme':"\b",'attribute':"backspace"}
     else:
         global buffPtr
         buffPtr-=1
@@ -289,7 +289,7 @@ machines.append(wsMachine)
 nlMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
-    if ord(c) is 10: return {'tokenType':"Newline", 'tokenStr':"linefeed newline"}
+    if ord(c) is 10: return {'tokenType':"Newline", 'lexeme':"\n", 'attribute':"linefeed newline"}
     #TODO more for different OS types? (namely, Windows, and the unicode encoding?)
     else:
         global buffPtr
@@ -350,7 +350,7 @@ def handle(c):#z
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-        return {'tokenType':"LONGREAL", 'tokenStr':lexeme}
+        return {'tokenType':"LONGREAL", 'lexeme':lexeme}
 lrMachine.addState("z", handle)
 lrMachine.setStart("__start__")
 machines.append(lrMachine)
@@ -392,7 +392,7 @@ def handle(c):#y
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-        return {'tokenType':"REAL", 'tokenStr':lexeme}
+        return {'tokenType':"REAL", 'lexeme':lexeme, 'attribute':"Real Number"} #TODO what are we doing with this attribute???
 rMachine.addState("y", handle)
 rMachine.setStart("__start__")
 machines.append(rMachine)
@@ -420,7 +420,7 @@ def handle(c):
         global buff
         lexeme="".join(buff[0:buffPtr])
         buffPtr-=1
-        return {'tokenType':"INTEGER", 'tokenStr':lexeme}
+        return {'tokenType':"INTEGER", 'lexeme':lexeme, 'attribute':"Integer"} #TODO what to do about attribute???
 intMachine.addState("num", handle)
 intMachine.setStart("__start__")
 machines.append(intMachine)
@@ -468,21 +468,8 @@ def getToken():
     #false if all else fails
     if machineWorked is False:
         #remove 1 element of buffer to move past bad char. TODO will this cause any errors?
+        lexeme=buff[0]
         buff=buff[1:]
-        return {'tokenType':"LEXERR", 'tokenStr':"Lexer could not determine token type"}
+        return {'tokenType':"lexerr", 'lexeme':lexeme, 'attribute':"Unrecognized Symbol"}
     assert type(machineWorked) is dict
     return machineWorked
-
-'''
-The code below is for testing only. Remove before submission
-'''
-'''
-lines=open("test.txt", 'r').readlines()
-for l in lines:
-    feedLexer(l)
-    result=getToken()
-    while result is not None:
-        assert type(result) is dict
-        print result
-        result=getToken()
-'''

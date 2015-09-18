@@ -31,6 +31,6 @@ for l in lines:
     lexer.feedLexer(l)
     nextToken=lexer.getToken()
     while nextToken is not None:
-        print nextToken
+        listingFile.write(str(nextToken) + '\n')
         nextToken=lexer.getToken()
     lineNum+=1
