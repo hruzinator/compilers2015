@@ -64,3 +64,9 @@ Added some real Pascal files (simple Pascal files that are within the language s
 
 9/15/2015
 Integrated lexer.py with main.py. Up until this point, I was using test code in lexer.py to test the lexer. Main.py, however, will be handling input and output and will call lexer.py as a module. The code implemented in main.py for "project 0" is now tied in with lexer.py, and the program now outputs a listing file.
+
+9/22/2015
+Adding the symbol table (finally). My approach is to create a new python file (symbolTable.py) that will define a symbolTable class. Ideally, I would like to create this class in main.py and pass it into the lexer, but as of right now the lexer will create the symbolTable object and pass it to main.py. This is because I wrote lexer.py as an importable module, and it would take too much time to go back and turn lexer.py into a class.
+
+9/26/2015
+Finished the symbol table implementation.
