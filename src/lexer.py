@@ -264,10 +264,14 @@ def handle(c): #letterNum
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
         token={'tokenType':"ID", 'lexeme':lexeme, 'attribute':""} #TODO do we even need attribute here?
-        ptr=hex(id(token))
-        token['attribute']=ptr
         global symTable
-        return token #TODO attribute will be a ptr to the symbol table value
+        result=symTable.insert(token)
+        if result is not None:
+            ptr=hex(id(result))
+            token['attribute']=ptr
+        else:
+            result=symTable.lookup(token['lexeme'])
+        return result 
 idMachine.addState("letterNum", handle)
 idMachine.setStart("__start__")
 machines.append(idMachine)

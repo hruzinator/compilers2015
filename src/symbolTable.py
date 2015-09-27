@@ -11,10 +11,11 @@ class symbolTable:
         assert type(token) is dict
         assert 'lexeme' in token
         assert 'tokenType' in token
-        if token not in self.symtable:
-            self.symtable.append(token)
-            return self.symtable[-1]
-        return None
+        for t in self.symtable:
+            if t['lexeme'] == token['lexeme']:
+                return None
+        self.symtable.append(token)
+        return self.symtable[-1]
 
     def lookup(self, token):
         if type(token) is dict:
