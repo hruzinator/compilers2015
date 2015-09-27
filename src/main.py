@@ -11,6 +11,7 @@ source file and output each line with a line number associated with it.
 
 import sys
 import lexer
+from symbolTable import symbolTable
 
 def printHelp():
     print "Usage:"
@@ -21,11 +22,24 @@ if len(sys.argv) is not 2:
     printHelp()
     sys.exit()
 
+#process reserved words file and store into symbol table
+lines = open('reservedWords.rwf', 'r').readlines()
+symTable=symbolTable()
+for l in lines:
+    words=l.split()
+    #TODO assert proper form is adhered to and that tokenType and attribute are valid
+    lexeme=words[0].translate(None, '\"')
+    tokenType=words[1]
+    attribute=words[2]
+    token={'lexeme':lexeme, 'tokenType':tokenType, 'attribute':attribute}
+    symTable.insert(token)
+
 #get an array of lines
 lines = open(sys.argv[1], "r").readlines()
 lineNum=1
 listingFile = open('lineListing.txt', 'w')
 
+lexer.defineSymTable(symTable)
 for l in lines:
     listingFile.write(str(lineNum) + ": " + l[:-1] + '\n')
     lexer.feedLexer(l)

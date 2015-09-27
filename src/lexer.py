@@ -259,12 +259,15 @@ def handle(c): #letterNum
     elif (48<=ld<=57):
         return  "letterNum"
     else:
-        #TODO symbol table
         global buffPtr
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-        return {'tokenType':"ID", 'lexeme':lexeme, 'attribute':"Soooo...a ptr to table value will go here"} #TODO attribute will be a ptr to the symbol table value
+        token={'tokenType':"ID", 'lexeme':lexeme, 'attribute':""} #TODO do we even need attribute here?
+        ptr=hex(id(token))
+        token['attribute']=ptr
+        global symTable
+        return token #TODO attribute will be a ptr to the symbol table value
 idMachine.addState("letterNum", handle)
 idMachine.setStart("__start__")
 machines.append(idMachine)
@@ -425,6 +428,9 @@ intMachine.addState("num", handle)
 intMachine.setStart("__start__")
 machines.append(intMachine)
 
+#symbol table variable
+symTable = None
+
 #define module methods
 def tryMachine(machine):
     global buff
@@ -444,7 +450,17 @@ def tryMachine(machine):
     buffPtr=0
     return result
 
+def defineSymTable(s):
+    global symTable
+    if symTable is not None:
+        print "Warning! Symbol table has already been defined. Overriding"
+    symTable=s
+
 def feedLexer(sourceString):
+    global symTable
+    if symTable is None:
+        print "Error! must pass in symbol table with defineSymTable(s) first"
+        assert(False)
     assert type(sourceString) is str
     global buff
     buff+=list(sourceString)
