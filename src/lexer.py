@@ -350,7 +350,7 @@ def handle(c):#z
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-        return {'tokenType':"LONGREAL", 'lexeme':lexeme}
+        return {'tokenType':"LONGREAL", 'lexeme':lexeme, 'attribute':"LONGREAL"}
 lrMachine.addState("z", handle)
 lrMachine.setStart("__start__")
 machines.append(lrMachine)
