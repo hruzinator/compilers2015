@@ -70,3 +70,9 @@ Adding the symbol table (finally). My approach is to create a new python file (s
 
 9/26/2015
 Finished the symbol table implementation.
+
+10/3/2015
+Fixed a few minor bugs. Made sure that the last token was end of file token.
+
+10/6/2015
+Began writing report for project 1.
