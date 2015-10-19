@@ -1,4 +1,4 @@
-Program example(input, output):
+program example(input, output):
 	var x, y: integer;
 	functinon gcd(a, b: integer): integer;
 	begin
