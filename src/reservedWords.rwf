@@ -1,2 +1,15 @@
 "program" KEYWORD progStart
 "." KEYWORD progEnd
+"var" KEYWORD varDeclare
+"not" KEYWORD negation
+"while" KEYWORD loopCond
+"do" KEYWORD loopBegin
+"if" KEYWORD condIf
+"then" KEYWORD condThen
+"else" KEYWORD condElse
+"begin" KEYWORD compStmtStart
+"end" KEYWORD compStmtEnd
+"function" KEYWORD subProgFunc
+"procedure" KEYWORD subProgProc
+"array" KEYWORD array
+"of" KEYWORD typeDec
