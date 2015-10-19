@@ -5,8 +5,7 @@ Pascal Compiler version 0.1 for CS 4013, Project 1
 Matthew Hruz, 2015, The University of Tulsa
 
 This python file will handle input from source files and reserved word
-files. Project 0 only requires that the program read in input from the
-source file and output each line with a line number associated with it.
+files.
 '''
 
 import sys
@@ -44,7 +43,8 @@ for l in lines:
     listingFile.write(str(lineNum) + ": " + l[:-1] + '\n')
     lexer.feedLexer(l)
     nextToken=lexer.getToken()
-    while nextToken is not None:
+    while type(nextToken) is not str:
         listingFile.write(str(nextToken) + '\n')
         nextToken=lexer.getToken()
+    assert nextToken is "noTokens"
     lineNum+=1

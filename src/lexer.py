@@ -281,9 +281,7 @@ wsMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
     #TODO may just want whitespace only. Not the different types of space.
-    if c is ' ': return {'tokenType':"Whitespace", 'lexeme':" ", 'attribute':"space"}
-    elif c is '\t': return {'tokenType':"Whitespace", 'lexeme':"\t" , 'attribute':"tab"}
-    elif c is '\b': return {'tokenType':"Whitespace", 'lexeme':"\b",'attribute':"backspace"}
+    if c is ' ' or c is '\t' or c is '\b': return None
     else:
         global buffPtr
         buffPtr-=1
@@ -296,7 +294,7 @@ machines.append(wsMachine)
 nlMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
-    if ord(c) is 10: return {'tokenType':"Newline", 'lexeme':"\n", 'attribute':"linefeed newline"}
+    if ord(c) is 10: return None
     #TODO more for different OS types? (namely, Windows, and the unicode encoding?)
     else:
         global buffPtr
@@ -443,10 +441,12 @@ def tryMachine(machine):
     result=True
     while result is True:
         if buffPtr >= len(buff):
-            return None #TODO perhaps extra indication that buff is not empty, just waiting?
+            return {'tokenType':"LEXERR", 'lexeme':"Incomplete token at the end of the buffer", 'attribute':""}
         result=machine.feedChar(buff[buffPtr])
         buffPtr+=1
-    if type(result) is dict:
+    if type(result) is None: #None is used for whitespace, comments, or other non-token generating items
+	return None
+    elif type(result) is dict:
         buff=buff[buffPtr:]
         buffPtr=0
         return result
@@ -478,18 +478,21 @@ def getToken():
     global buffPtr
     global machines
     if len(buff) is 0:
-        return None
+        return "noTokens"
 
-    machineWorked=False
+    machineResult=False
     i=0
-    while machineWorked is False and i < len(machines):
-        machineWorked=tryMachine(machines[i])
+    while machineResult is False and i < len(machines):
+        machineResult=tryMachine(machines[i])
         i+=1
-    #false if all else fails
-    if machineWorked is False:
+    
+	if machineResult is None: #machine passed by a non-token generating substring
+		return None
+	#false if all else fails
+    if machineResult is False:
         #remove 1 element of buffer to move past bad char. TODO will this cause any errors?
         lexeme=buff[0]
         buff=buff[1:]
         return {'tokenType':"lexerr", 'lexeme':lexeme, 'attribute':"Unrecognized Symbol"}
-    assert type(machineWorked) is dict
-    return machineWorked
+    assert type(machineResult) is dict
+    return machineResult
