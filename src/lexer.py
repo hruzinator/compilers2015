@@ -71,8 +71,8 @@ class LexerFSM:
             return True
 
         if type(newState) is dict:
-            #the FSM has found a valid token. NewState holds that token
-            assert 'tokenType' in newState and 'lexeme' in newState and 'attribute' in newState
+            #the FSM has found a valid token. NewState holds that token (or an empty dict if tokenless)
+            assert bool(newState) is False or ('tokenType' in newState and 'lexeme' in newState and 'attribute' in newState)
             self.isRunning=False
             return newState
 
@@ -281,7 +281,7 @@ wsMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
     #TODO may just want whitespace only. Not the different types of space.
-    if c is ' ' or c is '\t' or c is '\b': return None
+    if c is ' ' or c is '\t' or c is '\b': return {}
     else:
         global buffPtr
         buffPtr-=1
@@ -294,7 +294,7 @@ machines.append(wsMachine)
 nlMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
-    if ord(c) is 10: return None
+    if ord(c) is 10: return {}
     #TODO more for different OS types? (namely, Windows, and the unicode encoding?)
     else:
         global buffPtr
@@ -304,6 +304,23 @@ nlMachine.addState("__start__", handle)
 nlMachine.setStart("__start__")
 machines.append(nlMachine)
 
+#define comments machine
+commentMachine=LexerFSM()
+def handle(c): #start
+	assert type(c) is str and len(c)==1
+	if c is '{': return "commentChars"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+commentMachine.addState("__start__", handle)
+def handle(c): #commentChars
+	assert type(c) is str and len(c)==1
+	if c is "}": return {}
+	else: return "commentChars"
+commentMachine.addState("commentChars", handle)
+commentMachine.setStart("__start__")
+machines.append(commentMachine)
 
 #define longreal machine (must be before reals to ensure we don't premeturely tokenize a real out of a longreal)
 lrMachine=LexerFSM()
@@ -495,4 +512,5 @@ def getToken():
         buff=buff[1:]
         return {'tokenType':"lexerr", 'lexeme':lexeme, 'attribute':"Unrecognized Symbol"}
     assert type(machineResult) is dict
-    return machineResult
+    if bool(machineResult) is True: #the result was not tokenless
+    	return machineResult

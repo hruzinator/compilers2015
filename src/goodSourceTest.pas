@@ -1,3 +1,4 @@
+{This is a comment. It should be left out of the list of lexemes}
 program example(input, output):
 	var x, y: integer;
 	functinon gcd(a, b: integer): integer;

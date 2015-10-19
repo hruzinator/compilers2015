@@ -44,7 +44,8 @@ for l in lines:
     lexer.feedLexer(l)
     nextToken=lexer.getToken()
     while type(nextToken) is not str:
-        listingFile.write(str(nextToken) + '\n')
+        if nextToken != None:
+			listingFile.write(str(nextToken) + '\n')
         nextToken=lexer.getToken()
     assert nextToken is "noTokens"
     lineNum+=1
