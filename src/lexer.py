@@ -447,6 +447,35 @@ intMachine.addState("num", handle)
 intMachine.setStart("__start__")
 machines.append(intMachine)
 
+#define catch-all machine
+catchallMachine=LexerFSM()
+def handle(c):#start state
+	assert type(c) is str and len(c)==1
+	if c == '(': return {'tokenType':"SYMBOL", 'lexeme':"(", 'attribute':"openParen"}
+	if c == ')': return {'tokenType':"SYMBOL", 'lexeme':")", 'attribute':"closeParen"}
+	if c == ';': return {'tokenType':"SYMBOL", 'lexeme':";", 'attribute':"endStmt"}
+	if c == '[': return {'tokenType':"SYMBOL", 'lexeme':"[", 'attribute':"openBracket"}
+	if c == ']': return {'tokenType':"SYMBOL", 'lexeme':"]", 'attribute':"closeBracket"}
+	if c == ',': return {'tokenType':"SYMBOL", 'lexeme':",", 'attribute':"listDelim"}
+	if c == '.': return "periods"
+	else:
+		global buffPtr
+		buffPtr-=1
+		return None
+catchallMachine.addState("__start__", handle)
+def handle(c):#periods
+	#NOTE if token is indeed ., it is possible to hit end of file. Does python add EOF to the file?
+	assert type(c) is str and len(c)==1
+	if c == '.': return {'tokenType':"SYMBOL", 'lexeme':"..", 'attribute':"arrayRange"}
+	else: 
+		#just one period. End of program. Anything left in buffer should be just whitespace/newline, but that's for later stages to sort out
+		global buffPtr
+		buffPtr-=1
+		return {'tokenType':"SYMBOL", 'lexeme':".", 'attribute':"endProg"}
+catchallMachine.addState("periods", handle)
+catchallMachine.setStart("__start__")
+machines.append(catchallMachine) #XXX stitch this in once we are ready
+
 #symbol table variable
 symTable = None
 
