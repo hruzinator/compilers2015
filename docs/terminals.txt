@@ -1,0 +1,43 @@
+This document outlines all of the terminal symbols in the Grammar, and the tokens they should have. If an element of the 3-tuple is in (parentheses),
+ it means that it is a substitute for some other value
+
+program, KEYWORD, (sym table ptr)
+(id), IDENTIFIER, (sym table ptr)
+var, KEYWORD, (sym table ptr) //variable declaration
+array, KEYWORD, (sym table ptr)
+[, SYMBOL, openBracket //can mean beginning of array
+num, NUMBER, (number val) //??? check on this
+.., SYMBOL, arrayRange //indicates an array initialization within a range
+], SYMBOL, closeBracket //can mean end of an array
+of, KEYWORD, (sym table ptr) //used in array type declarations
+integer, KEYWORD, (sym table ptr) //declares an array as integer type
+real, KEYWORD, (sym table ptr) //declares an array as real type
+;, SYMBOL, endStmt
+function, KEYWORD, (sym table ptr)
+procedure, KEYWORD, (sym table ptr)
+(, SYMBOL, openParen //used to begin a parameter list
+), SYMBOL, endParen //used to end a parameter list
+begin, KEYWORD, (sym table ptr) //used to begin a compound statement
+end, KEYWORD, (sym table ptr) //used to end a compound statement
+:=, ASSIGNOP, assignTo //used to assign a value to a variable
+if, KEYWORD, condIf //begin conditional if-then-else statement (grammar excludes if-then)
+then, KEYWORD, condThen
+else, KEYWORD, condElse
+while, KEYWORD, loopCond //beginning of the specification of a loop condition
+do, KEYWORD, loopBegin //begins loop statements
+,, SYMBOL, listDelim//delinieates elements in an identifier list, or an expression list !!!note!!!: the token is quite literally ","
+=, RELOP, equal
+<>, RELOP, notEqual
+<, RELOP, lessThan
+<=, RELOP, lessThanOrEqual
+>=, RELOP, greaterThanOrEqual
+>, RELOP, greaterThan
++, ADDOP, plus
+-, ADDOP, minus
+or, ADDOP, booleanOr
+*, MULTOP, multiply
+/, MULTOP, divide
+div, MULTOP, integerDivide 
+mod, MULTOP, modulo
+and, MULTOP, booleanAnd
+not, KEYWORD, negation
