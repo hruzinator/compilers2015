@@ -6,7 +6,8 @@ program, KEYWORD, (sym table ptr)
 var, KEYWORD, (sym table ptr) //variable declaration
 array, KEYWORD, (sym table ptr)
 [, SYMBOL, openBracket //can mean beginning of array
-num, NUMBER, (number val) //??? check on this
+(number val), NUMBER, realNum
+(number val), NUMBER, intNum
 .., SYMBOL, arrayRange //indicates an array initialization within a range
 ], SYMBOL, closeBracket //can mean end of an array
 of, KEYWORD, (sym table ptr) //used in array type declarations
@@ -41,3 +42,4 @@ div, MULTOP, integerDivide
 mod, MULTOP, modulo
 and, MULTOP, booleanAnd
 not, KEYWORD, negation
+., SYMBOL, endProg
