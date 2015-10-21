@@ -105,20 +105,20 @@ def handle(c): #''
 relopMachine.addState("__start__", handle)
 def handle(c): #'<'
     assert type(c) is str and len(c)==1
-    if c == '>': return {'tokenType': "RELOP", 'lexeme':"<>", 'attribute':"not equals"}
-    elif c == '=': return {'tokenType': "RELOP", 'lexeme':"<=", 'attribute':"less than or equals"}
+    if c == '>': return {'tokenType': "RELOP", 'lexeme':"<>", 'attribute':"notEquals"}
+    elif c == '=': return {'tokenType': "RELOP", 'lexeme':"<=", 'attribute':"lessThanOrEquals"}
     else:
         global buffPtr
         buffPtr-=1
-        return {'tokenType': "RELOP", 'lexeme':"<", 'attribute':"less than"}
+        return {'tokenType': "RELOP", 'lexeme':"<", 'attribute':"lessThan"}
 relopMachine.addState("<", handle)
 def handle(c): #'>'
     assert type(c) is str and len(c)==1
-    if c == '=': return {'tokenType': "RELOP", 'lexeme':">=", 'attribute':"greater than or equals"}
+    if c == '=': return {'tokenType': "RELOP", 'lexeme':">=", 'attribute':"greaterThanOrEquals"}
     else:
         global buffPtr
         buffPtr-=1
-        return {'tokenType': "RELOP", 'lexeme':">", 'attribute':"greater than"}
+        return {'tokenType': "RELOP", 'lexeme':">", 'attribute':"greaterThan"}
 relopMachine.addState(">", handle)
 relopMachine.setStart("__start__")
 machines.append(relopMachine)
@@ -135,7 +135,7 @@ def handle(c):
 assignopMachine.addState("__start__", handle)
 def handle(c):#":"
     assert type(c) is str and len(c)==1
-    if c == "=": return {'tokenType': "ASSIGNOP", 'lexeme':":=", 'attribute':"assign to"}
+    if c == "=": return {'tokenType': "ASSIGNOP", 'lexeme':":=", 'attribute':"assignTo"}
     else:
         global buffPtr
         buffPtr-=2
@@ -161,9 +161,9 @@ def handle(c):#'o'
     if c == 'r': return "or"
     else: #what we thought was an or really wasn't an or
         global buffPtr
-        buffPtr-=2 #go back to o
+        buffPtr-=2
         return None
-addopMachine.addState("o", handle)
+addopMachine.addState("o", handle) #TODO an identifier could technically be or43 or something stupid. Make sure to address this
 def handle(c):#'or' -> must make sure word ends (i.e. oreo is technically an ID or reserved word)
     assert type(c) is str and len(c)==1
     #check to see if the next char is a letter
@@ -172,7 +172,7 @@ def handle(c):#'or' -> must make sure word ends (i.e. oreo is technically an ID 
         buffPtr-=3
         return None
     else:
-        return {'tokenType': "ADDOP", 'lexeme':'or', 'attribute':"logical or"}
+        return {'tokenType': "ADDOP", 'lexeme':'or', 'attribute':"booleanOr"}
 addopMachine.addState("or", handle)
 addopMachine.setStart("__start__")
 machines.append(addopMachine)
@@ -183,8 +183,8 @@ def handle(c):
     global buff
     global buffPtr
     assert type(c) is str and len(c)==1
-    if c == '*': return {'tokenType': "MULTOP", 'lexeme':'*'}
-    elif c == '/': return {'tokenType':"multop", 'lexeme':"/"}
+    if c == '*': return {'tokenType': "MULTOP", 'lexeme':'*', 'attribute':"multiply"}
+    elif c == '/': return {'tokenType':"MULTOP", 'lexeme':"/", 'attribute':"divide"}
     elif c == 'd': #handle it all here to reduce excess code
         if buffPtr+3>=len(buff):
             return None
@@ -195,7 +195,7 @@ def handle(c):
                 buffPtr-=2
                 return None
             buffPtr+=2
-            return {'tokenType':"multop", 'lexeme':"/"}
+            return {'tokenType':"MULTOP", 'lexeme':"div", 'attribute':"integerDivide"}
         else:
             buffPtr-=1
             return None
@@ -209,7 +209,7 @@ def handle(c):
                 buffPtr-=2
                 return None
             buffPtr+=2
-            return {'tokenType':"multop", 'lexeme':"mod", 'attribute':"modulus"}
+            return {'tokenType':"MULTOP", 'lexeme':"mod", 'attribute':"modulo"}
         else:
             buffPtr-=1
             return None
@@ -223,7 +223,7 @@ def handle(c):
                 buffPtr-=2
                 return None
             buffPtr+=2
-            return {'tokenType':"multop", 'lexeme':"and", 'attribute':"logical and"}
+            return {'tokenType':"multop", 'lexeme':"and", 'attribute':"booleanAnd"}
         else:
             buffPtr-=1
             return None
@@ -371,7 +371,7 @@ def handle(c):#z
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-        return {'tokenType':"LONGREAL", 'lexeme':lexeme, 'attribute':"LONGREAL"}
+        return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"longReal"}
 lrMachine.addState("z", handle)
 lrMachine.setStart("__start__")
 machines.append(lrMachine)
@@ -413,7 +413,7 @@ def handle(c):#y
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-        return {'tokenType':"REAL", 'lexeme':lexeme, 'attribute':"Real Number"} #TODO what are we doing with this attribute???
+        return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"realNum"} #TODO what are we doing with this attribute???
 rMachine.addState("y", handle)
 rMachine.setStart("__start__")
 machines.append(rMachine)
@@ -441,7 +441,7 @@ def handle(c):
         global buff
         lexeme="".join(buff[0:buffPtr])
         buffPtr-=1
-        return {'tokenType':"INTEGER", 'lexeme':lexeme, 'attribute':"Integer"} #TODO what to do about attribute???
+        return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"intNum"} #TODO what to do about attribute???
 intMachine.addState("num", handle)
 intMachine.setStart("__start__")
 machines.append(intMachine)

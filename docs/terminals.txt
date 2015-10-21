@@ -8,6 +8,7 @@ array, KEYWORD, (sym table ptr)
 [, SYMBOL, openBracket //can mean beginning of array
 (number val), NUMBER, realNum
 (number val), NUMBER, intNum
+(number val), NUMBER, longReal
 .., SYMBOL, arrayRange //indicates an array initialization within a range
 ], SYMBOL, closeBracket //can mean end of an array
 of, KEYWORD, (sym table ptr) //used in array type declarations
@@ -27,14 +28,14 @@ else, KEYWORD, condElse
 while, KEYWORD, loopCond //beginning of the specification of a loop condition
 do, KEYWORD, loopBegin //begins loop statements
 ,, SYMBOL, listDelim //delinieates elements in an identifier list, or an expression list !!!note!!!: the token is quite literally ","
-=, RELOP, equal
-<>, RELOP, notEqual
+=, RELOP, equals
+<>, RELOP, notEquals
 <, RELOP, lessThan
-<=, RELOP, lessThanOrEqual
->=, RELOP, greaterThanOrEqual
+<=, RELOP, lessThanOrEquals
+>=, RELOP, greaterThanOrEquals
 >, RELOP, greaterThan
-+, ADDOP, plus
--, ADDOP, minus
++, ADDOP, add
+-, ADDOP, subtract
 or, ADDOP, booleanOr
 *, MULTOP, multiply
 /, MULTOP, divide
