@@ -26,7 +26,7 @@ then, KEYWORD, condThen
 else, KEYWORD, condElse
 while, KEYWORD, loopCond //beginning of the specification of a loop condition
 do, KEYWORD, loopBegin //begins loop statements
-,, SYMBOL, listDelim//delinieates elements in an identifier list, or an expression list !!!note!!!: the token is quite literally ","
+,, SYMBOL, listDelim //delinieates elements in an identifier list, or an expression list !!!note!!!: the token is quite literally ","
 =, RELOP, equal
 <>, RELOP, notEqual
 <, RELOP, lessThan
@@ -43,3 +43,4 @@ mod, MULTOP, modulo
 and, MULTOP, booleanAnd
 not, KEYWORD, negation
 ., SYMBOL, endProg
+:, SYMBOL, typeDeclare //follows an identifier or parameter list to declare the type of all the identifiers in the identifier list

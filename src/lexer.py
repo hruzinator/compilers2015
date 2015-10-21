@@ -281,7 +281,7 @@ wsMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
     #TODO may just want whitespace only. Not the different types of space.
-    if c is ' ' or c is '\t' or c is '\b': return {}
+    if c == ' ' or c == '\t' or c == '\b': return {}
     else:
         global buffPtr
         buffPtr-=1
@@ -294,8 +294,7 @@ machines.append(wsMachine)
 nlMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
-    if ord(c) is 10: return {}
-    #TODO more for different OS types? (namely, Windows, and the unicode encoding?)
+    if c == '\n': return {}
     else:
         global buffPtr
         buffPtr-=1
@@ -451,12 +450,13 @@ machines.append(intMachine)
 catchallMachine=LexerFSM()
 def handle(c):#start state
 	assert type(c) is str and len(c)==1
+	if c == ';': return {'tokenType':"SYMBOL", 'lexeme':";", 'attribute':"endStmt"}
 	if c == '(': return {'tokenType':"SYMBOL", 'lexeme':"(", 'attribute':"openParen"}
 	if c == ')': return {'tokenType':"SYMBOL", 'lexeme':")", 'attribute':"closeParen"}
-	if c == ';': return {'tokenType':"SYMBOL", 'lexeme':";", 'attribute':"endStmt"}
 	if c == '[': return {'tokenType':"SYMBOL", 'lexeme':"[", 'attribute':"openBracket"}
 	if c == ']': return {'tokenType':"SYMBOL", 'lexeme':"]", 'attribute':"closeBracket"}
 	if c == ',': return {'tokenType':"SYMBOL", 'lexeme':",", 'attribute':"listDelim"}
+	if c == ':': return {'tokenType':"SYMBOL", 'lexeme':":", 'attribute':"typeDeclare"}
 	if c == '.': return "periods"
 	else:
 		global buffPtr
