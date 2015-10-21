@@ -14,6 +14,10 @@ echo "\nASSIGNOP"
 echo "-----------"
 grep -E '\bASSIGNOP\b' terminals.txt | sort | uniq
 
+echo "\nRELOPS"
+echo "-----------"
+grep -E '\bRELOP\b' terminals.txt | sort | uniq
+
 echo "\nIDENTIFIER"
 echo "-----------"
 grep -E '\bIDENTIFIER\b' terminals.txt | sort | uniq
