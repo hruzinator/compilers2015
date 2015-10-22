@@ -1,7 +1,3 @@
-{
-This program intends to test every facet of the lexer, not leaving out a single token or test case in the formatting of the code.
-This is "good source" and should compile to pascal without any lexical errors.
-}
 
 program fullProg(xVar, yVar);
 	var x, y: integer;
