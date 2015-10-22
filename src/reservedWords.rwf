@@ -1,5 +1,4 @@
 "program" KEYWORD progStart
-"." KEYWORD progEnd
 "var" KEYWORD varDeclare
 "not" KEYWORD negation
 "while" KEYWORD loopCond
@@ -13,13 +12,3 @@
 "procedure" KEYWORD subProgProc
 "array" KEYWORD array
 "of" KEYWORD typeDec
-"[" KEYWORD openBracket
-"]" KEYWORD closeBracket
-".." KEYWORD arrayRange
-"(" KEYWORD openParen
-")" KEYWORD closeParen
-";" KEYWORD endStmnt
-":" KEYWORD semicolon
-"," KEYWORD comma
-"+" SIGNOP positive
-"-" SIGNOP negative

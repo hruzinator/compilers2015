@@ -91,6 +91,34 @@ buff=[]
 buffPtr=0
 machines=[] #order is important. Make sure machines are priority ordered
 
+
+#define whitespace machine
+wsMachine=LexerFSM()
+def handle(c):
+    assert type(c) is str and len(c)==1
+    #TODO may just want whitespace only. Not the different types of space.
+    if c == ' ' or c == '\t' or c == '\b': return {}
+    else:
+        global buffPtr
+        buffPtr-=1
+        return None
+wsMachine.addState("__start__", handle)
+wsMachine.setStart("__start__")
+machines.append(wsMachine)
+
+#define newline manchine
+nlMachine=LexerFSM()
+def handle(c):
+    assert type(c) is str and len(c)==1
+    if c == '\n': return {}
+    else:
+        global buffPtr
+        buffPtr-=1
+        return None
+nlMachine.addState("__start__", handle)
+nlMachine.setStart("__start__")
+machines.append(nlMachine)
+
 #define RELOP machine
 relopMachine=LexerFSM()
 def handle(c): #''
@@ -234,32 +262,6 @@ multopMachine.addState("__start__", handle)
 multopMachine.setStart("__start__")
 machines.append(multopMachine)
 
-#define whitespace machine
-wsMachine=LexerFSM()
-def handle(c):
-    assert type(c) is str and len(c)==1
-    #TODO may just want whitespace only. Not the different types of space.
-    if c == ' ' or c == '\t' or c == '\b': return {}
-    else:
-        global buffPtr
-        buffPtr-=1
-        return None
-wsMachine.addState("__start__", handle)
-wsMachine.setStart("__start__")
-machines.append(wsMachine)
-
-#define newline manchine
-nlMachine=LexerFSM()
-def handle(c):
-    assert type(c) is str and len(c)==1
-    if c == '\n': return {}
-    else:
-        global buffPtr
-        buffPtr-=1
-        return None
-nlMachine.addState("__start__", handle)
-nlMachine.setStart("__start__")
-machines.append(nlMachine)
 
 #define comments machine
 commentMachine=LexerFSM()
@@ -405,27 +407,6 @@ intMachine.addState("num", handle)
 intMachine.setStart("__start__")
 machines.append(intMachine)
 
-#define keyword machine
-keywordMachine=LexerFSM()
-def handle(c):#start state
-	#TODO keyword machine
-	assert type(c) is str and len(c)==1
-	if c == ';': return {'tokenType':"SYMBOL", 'lexeme':";", 'attribute':"endStmt"}
-	if c == '(': return {'tokenType':"SYMBOL", 'lexeme':"(", 'attribute':"openParen"}
-	if c == ')': return {'tokenType':"SYMBOL", 'lexeme':")", 'attribute':"closeParen"}
-	if c == '[': return {'tokenType':"SYMBOL", 'lexeme':"[", 'attribute':"openBracket"}
-	if c == ']': return {'tokenType':"SYMBOL", 'lexeme':"]", 'attribute':"closeBracket"}
-	if c == ',': return {'tokenType':"SYMBOL", 'lexeme':",", 'attribute':"listDelim"}
-	if c == ':': return {'tokenType':"SYMBOL", 'lexeme':":", 'attribute':"typeDeclare"}
-	if c == '.': return {'tokenType':"SYMBOL", 'lexeme':".",'attribute':"periods"}
-	else:
-		global buffPtr
-		buffPtr-=1
-		return None
-keywordMachine.addState("__start__", handle)
-keywordMachine.setStart("__start__")
-machines.append(keywordMachine)
-
 #define ID machine
 #TODO implement restrictions on the size of ID
 idMachine=LexerFSM()
@@ -455,12 +436,15 @@ def handle(c): #letterNum
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-		#TODO check if symbol is already in symbol table
+		#check if lexeme is a reserved word
+        result=reservedWordTable.lookup(lexeme)
+        if result is not None:
+            return result
         token={'tokenType':"ID", 'lexeme':lexeme, 'attribute':""} 
         global symTable
         result=symTable.insert(token)
         if result is not None:
-            ptr=hex(id(result))
+            ptr=hex(id(result)) #TODO change in favor of better pointer scheme
             token['attribute']=ptr
         else:
             result=symTable.lookup(token['lexeme'])
@@ -468,6 +452,17 @@ def handle(c): #letterNum
 idMachine.addState("letterNum", handle)
 idMachine.setStart("__start__")
 machines.append(idMachine)
+
+
+#define keyword machine
+catchAllMachine=LexerFSM()
+def handle(c):#start state
+	assert type(c) is str and len(c)==1
+	return {'tokenType':"lexerr", 'lexeme':c, 'attribute':"Unrecognized Symbol"}
+catchAllMachine.addState("__start__", handle)
+catchAllMachine.setStart("__start__")
+machines.append(catchAllMachine)
+
 
 #symbol tables
 from symbolTable import symbolTable
@@ -486,7 +481,7 @@ def tryMachine(machine):
         result=machine.feedChar(buff[buffPtr])
         buffPtr+=1
     if type(result) is None: #None is used for whitespace, comments, or other non-token generating items
-	return None
+        return None
     elif type(result) is dict:
         buff=buff[buffPtr:]
         buffPtr=0
@@ -504,7 +499,7 @@ def defineReservedWordTable(s):
 def feedLexer(sourceString):
     global reservedWordTable
     if reservedWordTable is None:
-        print "Error! must pass in symbol table with defineSymTable(s) first"
+        print "Error! must pass in reserved word table with defineReservedWordTable(s) first"
         sys.exit()
     assert type(sourceString) is str
     global buff
@@ -523,17 +518,13 @@ def getToken():
 
     machineResult=False
     i=0
+	#try all the machines
     while machineResult is False and i < len(machines):
         machineResult=tryMachine(machines[i])
         i+=1
     
 	if machineResult is None: #machine passed by a non-token generating substring
-		return None
-	#false if all else fails
-    if machineResult is False:
-        lexeme=buff[0]
-        buff=buff[1:]
-        return {'tokenType':"lexerr", 'lexeme':lexeme, 'attribute':"Unrecognized Symbol"}
+		return None #TODO fix
     assert type(machineResult) is dict
     if bool(machineResult) is True: #the result was not tokenless
     	return machineResult
