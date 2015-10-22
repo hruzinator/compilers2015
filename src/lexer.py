@@ -292,6 +292,7 @@ def handle(c): #start
         buffPtr-=1
         return None
 lrMachine.addState("__start__", handle)
+
 def handle(c):#x
     assert type(c) is str and len(c)==1
     d=ord(c)
@@ -416,7 +417,7 @@ def handle(c):#start state
 	if c == ']': return {'tokenType':"SYMBOL", 'lexeme':"]", 'attribute':"closeBracket"}
 	if c == ',': return {'tokenType':"SYMBOL", 'lexeme':",", 'attribute':"listDelim"}
 	if c == ':': return {'tokenType':"SYMBOL", 'lexeme':":", 'attribute':"typeDeclare"}
-	if c == '.': return "periods"
+	if c == '.': return {'tokenType':"SYMBOL", 'lexeme':".",'attribute':"periods"}
 	else:
 		global buffPtr
 		buffPtr-=1
