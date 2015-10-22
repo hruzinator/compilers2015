@@ -234,48 +234,6 @@ multopMachine.addState("__start__", handle)
 multopMachine.setStart("__start__")
 machines.append(multopMachine)
 
-#define ID machine
-#TODO implement restrictions on the size of ID
-idMachine=LexerFSM()
-def handle(c): #start
-    global buffPtr
-    assert type(c) is str and len(c)==1
-    #convert c to ascii number representation
-    l=ord(c)
-    #check if l is a capital or lowercase letter
-    if (65<=l<=90) or (97<=l<=122):
-        return  "letterNum"
-    else:
-        buffPtr-=1
-        return None
-idMachine.addState("__start__", handle)
-def handle(c): #letterNum
-    assert type(c) is str and len(c)==1
-    ld=ord(c)
-    #check if ld is a letter
-    if (65<=ld<=90) or (97<=ld<=122):
-        return  "letterNum"
-    #check if ld is a number
-    elif (48<=ld<=57):
-        return  "letterNum"
-    else:
-        global buffPtr
-        global buff
-        lexeme="".join(buff[:buffPtr])
-        buffPtr-=1
-        token={'tokenType':"ID", 'lexeme':lexeme, 'attribute':""} #TODO do we even need attribute here?
-        global symTable
-        result=symTable.insert(token)
-        if result is not None:
-            ptr=hex(id(result))
-            token['attribute']=ptr
-        else:
-            result=symTable.lookup(token['lexeme'])
-        return result 
-idMachine.addState("letterNum", handle)
-idMachine.setStart("__start__")
-machines.append(idMachine)
-
 #define whitespace machine
 wsMachine=LexerFSM()
 def handle(c):
@@ -353,7 +311,7 @@ def handle(c):#y
     #check if d is a number
     if (48<=d<=57):
         return  "y"
-    elif c is 'e':
+    elif c is 'E':
         return "z"
     else:
         global buffPtr
@@ -446,9 +404,10 @@ intMachine.addState("num", handle)
 intMachine.setStart("__start__")
 machines.append(intMachine)
 
-#define catch-all machine
-catchallMachine=LexerFSM()
+#define keyword machine
+keywordMachine=LexerFSM()
 def handle(c):#start state
+	#TODO keyword machine
 	assert type(c) is str and len(c)==1
 	if c == ';': return {'tokenType':"SYMBOL", 'lexeme':";", 'attribute':"endStmt"}
 	if c == '(': return {'tokenType':"SYMBOL", 'lexeme':"(", 'attribute':"openParen"}
@@ -462,22 +421,57 @@ def handle(c):#start state
 		global buffPtr
 		buffPtr-=1
 		return None
-catchallMachine.addState("__start__", handle)
-def handle(c):#periods
-	#NOTE if token is indeed ., it is possible to hit end of file. Does python add EOF to the file?
-	assert type(c) is str and len(c)==1
-	if c == '.': return {'tokenType':"SYMBOL", 'lexeme':"..", 'attribute':"arrayRange"}
-	else: 
-		#just one period. End of program. Anything left in buffer should be just whitespace/newline, but that's for later stages to sort out
-		global buffPtr
-		buffPtr-=1
-		return {'tokenType':"SYMBOL", 'lexeme':".", 'attribute':"endProg"}
-catchallMachine.addState("periods", handle)
-catchallMachine.setStart("__start__")
-machines.append(catchallMachine) #XXX stitch this in once we are ready
+keywordMachine.addState("__start__", handle)
+keywordMachine.setStart("__start__")
+machines.append(keywordMachine)
 
-#symbol table variable
-symTable = None
+#define ID machine
+#TODO implement restrictions on the size of ID
+idMachine=LexerFSM()
+def handle(c): #start
+    global buffPtr
+    assert type(c) is str and len(c)==1
+    #convert c to ascii number representation
+    l=ord(c)
+    #check if l is a capital or lowercase letter
+    if (65<=l<=90) or (97<=l<=122):
+        return  "letterNum"
+    else:
+        buffPtr-=1
+        return None
+idMachine.addState("__start__", handle)
+def handle(c): #letterNum
+    assert type(c) is str and len(c)==1
+    ld=ord(c)
+    #check if ld is a letter
+    if (65<=ld<=90) or (97<=ld<=122):
+        return  "letterNum"
+    #check if ld is a number
+    elif (48<=ld<=57):
+        return  "letterNum"
+    else:
+        global buffPtr
+        global buff
+        lexeme="".join(buff[:buffPtr])
+        buffPtr-=1
+		#TODO check if symbol is already in symbol table
+        token={'tokenType':"ID", 'lexeme':lexeme, 'attribute':""} 
+        global symTable
+        result=symTable.insert(token)
+        if result is not None:
+            ptr=hex(id(result))
+            token['attribute']=ptr
+        else:
+            result=symTable.lookup(token['lexeme'])
+        return result 
+idMachine.addState("letterNum", handle)
+idMachine.setStart("__start__")
+machines.append(idMachine)
+
+#symbol tables
+from symbolTable import symbolTable
+symTable = symbolTable()
+reservedWordTable = None
 
 #define module methods
 def tryMachine(machine):
@@ -500,24 +494,24 @@ def tryMachine(machine):
     buffPtr=0
     return result
 
-def defineSymTable(s):
-    global symTable
-    if symTable is not None:
+def defineReservedWordTable(s):
+    global reservedWordTable
+    if reservedWordTable is not None:
         print "Warning! Symbol table has already been defined. Overriding"
-    symTable=s
+    reservedWordTable=s
 
 def feedLexer(sourceString):
-    global symTable
-    if symTable is None:
+    global reservedWordTable
+    if reservedWordTable is None:
         print "Error! must pass in symbol table with defineSymTable(s) first"
-        assert(False)
+        sys.exit()
     assert type(sourceString) is str
     global buff
     buff+=list(sourceString)
 
 # Get the next token
 #returns:
-#   None if there are no complete tokens in the buffer
+#   None if there are no complete tokens in the buffer TODO this is bad. ALWAYS return a token!
 #   The three tuple of the next token if the next token exists
 def getToken():
     global buff
@@ -536,7 +530,6 @@ def getToken():
 		return None
 	#false if all else fails
     if machineResult is False:
-        #remove 1 element of buffer to move past bad char. TODO will this cause any errors?
         lexeme=buff[0]
         buff=buff[1:]
         return {'tokenType':"lexerr", 'lexeme':lexeme, 'attribute':"Unrecognized Symbol"}
