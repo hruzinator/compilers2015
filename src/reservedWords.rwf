@@ -9,6 +9,5 @@
 "begin" KEYWORD compStmtStart
 "end" KEYWORD compStmtEnd
 "function" KEYWORD subProgFunc
-"procedure" KEYWORD subProgProc
 "array" KEYWORD array
 "of" KEYWORD typeDec
