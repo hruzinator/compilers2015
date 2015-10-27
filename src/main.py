@@ -35,6 +35,7 @@ for l in lines:
 
 #get an array of lines
 lines = open(sys.argv[1], "r").readlines()
+lines[-1]+='\x03'
 lineNum=1
 listingFile = open('lineListing.txt', 'w')
 

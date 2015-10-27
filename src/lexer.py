@@ -458,6 +458,8 @@ machines.append(idMachine)
 catchAllMachine=LexerFSM()
 def handle(c):#start state
 	assert type(c) is str and len(c)==1
+	if ord(c) is 3 :  #end of file
+		return {'tokenType':'EOF', 'lexeme':"$", 'attribute':"End of File"}
 	return {'tokenType':"lexerr", 'lexeme':c, 'attribute':"Unrecognized Symbol"}
 catchAllMachine.addState("__start__", handle)
 catchAllMachine.setStart("__start__")
