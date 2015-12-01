@@ -3,6 +3,7 @@
 Lexer for compiler
 '''
 from types import *
+import sys
 
 class LexerFSM:
     def __init__(self):
@@ -532,4 +533,9 @@ def getToken():
 	#check if machineResult is a non-empty token
 	if type(machineResult) is dict and bool(machineResult) is True:
 	    isToken = True
+    if machineResult['tokenType'] is 'lexerr':
+	#TODO fix
+	pass        
+	#print "Lexical Error! " + str(machineResult['lexeme'])+ " is not a valid token."
+        #sys.exit()
     return machineResult

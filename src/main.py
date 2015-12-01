@@ -41,6 +41,7 @@ lines[-1]+='\x03'
 lexer.defineReservedWordTable(rwTable)
 for l in lines:
     lexer.feedLexer(l)
+print "lexical analysis is complete"
 
 parser.setup(lexer, rwTable)
 parser.parse()
