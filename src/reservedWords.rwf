@@ -11,3 +11,4 @@
 "function" KEYWORD subProgFunc
 "array" KEYWORD array
 "of" KEYWORD typeDec
+"$" EOF endOfFile
