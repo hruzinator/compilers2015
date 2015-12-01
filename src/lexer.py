@@ -459,7 +459,7 @@ catchAllMachine=LexerFSM()
 def handle(c):#start state
 	assert type(c) is str and len(c)==1
 	if ord(c) is 3 :  #end of file
-		return {'tokenType':'EOF', 'lexeme':"$", 'attribute':"End of File"}
+		return {'tokenType':'EOF', 'lexeme':"$", 'attribute':"endOfFile"}
 	return {'tokenType':"lexerr", 'lexeme':c, 'attribute':"Unrecognized Symbol"}
 catchAllMachine.addState("__start__", handle)
 catchAllMachine.setStart("__start__")
@@ -515,18 +515,21 @@ def getToken():
     global buff
     global buffPtr
     global machines
-    if len(buff) is 0:
-        return "noTokens"
 
-    machineResult=False
-    i=0
-	#try all the machines
-    while machineResult is False and i < len(machines):
-        machineResult=tryMachine(machines[i])
-        i+=1
+    isToken = False
+    while not isToken:
+
+        if len(buff) is 0:
+            return "noTokens"
+
+        machineResult=False
+        i=0
+        #try all the machines
+        while (machineResult is False or machineResult is None) and i < len(machines):
+            machineResult=tryMachine(machines[i])
+            i+=1
     
-	if machineResult is None: #machine passed by a non-token generating substring
-		return None #TODO fix
-    assert type(machineResult) is dict
-    if bool(machineResult) is True: #the result was not tokenless
-    	return machineResult
+	#check if machineResult is a non-empty token
+	if type(machineResult) is dict and bool(machineResult) is True:
+	    isToken = True
+    return machineResult
