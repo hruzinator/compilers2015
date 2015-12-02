@@ -3,7 +3,7 @@ Project 2 Log
 -------------
 
 10/25/15
-Massaged grammar. Removed ambiguity (most of the ambiguity resulted from changes to the Pascal grammar made in Project 2's description). I spent a lot of time trying to find an ambiguity in the nested subprograms addition to the project requirements, but as it turns out there isn't an ambiguity here. Since since all subprograms must start with a <subprogram_head> and they all must end with a <compound_statement>. Both of those non-terminals must produce some terminals (function id for <subprogram_head> and begin and end for <compound_statement>).
+Massaged grammar. Removed ambiguity (most of the ambiguity resulted from changes to the Pascal grammar made in Project 2's description). I spent a lot of time trying to find an ambiguity in the nested subprograms addition to the project requirements, but as it turns out there isn't an ambiguity there. Since since all subprograms must start with a <subprogram_head> and they all must end with a <compound_statement>. Both of those non-terminals must produce some terminals (function id for <subprogram_head> and begin and end for <compound_statement>).
 
 10/29/15
 Began deciding on how to implement code. Reviewed class notes on how to implement a syntax analyzer. Given how formulaic the code is, I am considering creating an automated way to generate my code, with the hope that it will actually be faster than implenting the code by hand. Most of the time spent on Project 1 was spent debugging code, so minimizing the amount of manual code writing minimizes the number of bugs I could create.
@@ -27,4 +27,4 @@ Computed First and follow sets for all productions.
 Created most of the parse table. Did find a few mistakes in the first and follow sets due to human error. Corrected those mistakes and throughly checked the grammar to see if the mistakes affected any other first/follow sets.
 
 11/30/15
-Programmed match() and parse() functions and a couple of the first few production methods. Given that the parse table is nearly complete, I expect to finish off the parse table and the code tomorrow, barring any unforseen problems. I am not implementing the aforementioned parser generating code and have opted to program by hand. As expected, the implementation appears to be going quite quickly.
+Programmed match() and parse() functions and the first few production methods. Given that the parse table is nearly complete, I expect to finish off the parse table and the code tomorrow, barring any unforseen problems. I am not implementing the aforementioned parser generating code and have opted to program by hand. The code I'm generating is much more refined and bug-free compared to project 1, so it isn't nessisary. As expected, the implementation appears to be going quite quickly.

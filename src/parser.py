@@ -67,6 +67,14 @@ def identifier_list():
 	return
 
 def program1():
+	global tok
+	if tok['lexeme'] is "var":
+		declarations()
+		program1_1()
+	elif tok['lexeme'] is "function":
+		subprogram_declarations()
+		
+	elif tok['lexeme'] is "begin":
 	return
 
 def program():
