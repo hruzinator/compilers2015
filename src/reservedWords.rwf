@@ -11,4 +11,17 @@
 "function" KEYWORD subProgFunc
 "array" KEYWORD array
 "of" KEYWORD typeDec
+"integer" KEYWORD intType
+"real" KEYWORD realType
+"[" KEYWORD openBracket
+"]" KEYWORD closeBracket
+".." KEYWORD arrayRange
+"(" KEYWORD openParen
+")" KEYWORD closeParen
+";" KEYWORD endStmnt
+":" KEYWORD semicolon
+"," KEYWORD comma
+"+" SIGNOP positive
+"-" SIGNOP negative
+"." KEYWORD progEnd
 "$" EOF endOfFile
