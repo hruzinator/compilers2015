@@ -68,7 +68,7 @@ Begin production methods
 '''
 def sign():
 	global tok
-	if tok['lexeme']=='+'
+	if tok['lexeme']=='+':
 		matchByLexeme('+')
 	elif tok['lexeme']=='-':
 		matchByLexeme('-')
@@ -78,12 +78,15 @@ def sign():
 
 def factor1():
 	global tok
-	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' or tok['lexeme']=='else' or tok['lexeme']=='[' or tok['lexeme']==']' or tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or tok['tokenType']=='MULTOP' or tok['lexeme']=='then' or tok['lexeme']=='do':
+	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' \
+	or tok['lexeme']=='else' or tok['lexeme']=='[' or tok['lexeme']==']' or \
+	tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' \
+	or tok['tokenType']=='MULTOP' or tok['lexeme']=='then' or tok['lexeme']=='do':
 		variable1()
 	elif tok['lexeme']=='(':
 		matchByLexeme('(')
 		expression_list()
-		
+		matchByLexeme(')')
 	else:
 		syntaxError([',', ')', ';', 'end', 'else', '[', ']', 'then', 'do', 'type: MULTOP', 'type: ADDOP', 'type: MULTOP'])
 		factor1()
@@ -112,7 +115,10 @@ def term1():
 		matchByType("MULTOP")
 		factor()
 		term1()
-	elif tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or tok['lexeme']==';' or tok['lexeme']=='else' or tok['lexeme']=='end' or tok['lexeme']=='then' or tok['lexeme']=='do' or tok['lexeme']==']' or tok['lexeme']==',' or tok['lexeme']==')':
+	elif tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or tok['lexeme']==';' \
+	or tok['lexeme']=='else' or tok['lexeme']=='end' or tok['lexeme']=='then' or \
+	tok['lexeme']=='do' or tok['lexeme']==']' or tok['lexeme']==',' or tok['lexeme']==')' \
+	or tok['tokenType']=='EOF': #TODO REMOVE EOF from term1! For testing only!!!
 		return
 	else:
 		syntaxError([';', 'else', 'end', 'then', 'do', ']', ',', ')', 'type: ADDOP', 'type: RELOP', 'type: MULTOP'])
@@ -120,7 +126,7 @@ def term1():
 
 def term():
 	global tok
-	if tok['lexeme']=='(' or tok['lexeme']=='not' or tok['tokenType']=='ID' or tok['tokenType']=='NUMBER':
+	if tok['lexeme']=='(' or tok['lexeme']=='not' or	 tok['tokenType']=='ID' or tok['tokenType']=='NUMBER':
 		factor()
 		term1()
 	else:
@@ -129,7 +135,9 @@ def term():
 
 def simple_expression1():
 	global tok
-	tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' or tok['lexeme']=='else' or tok['lexeme']==']' or tok['lexeme']=='then' or tok['lexeme']=='do' or tok['tokenType']=='RELOP':
+	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' \
+	or tok['lexeme']=='else' or tok['lexeme']==']' or tok['lexeme']=='then' \
+	or tok['lexeme']=='do' or tok['tokenType']=='RELOP':
 		return
 	elif tok['tokenType']=='ADDOP':
 		matchByType('ADDOP')
@@ -154,7 +162,8 @@ def simple_expression():
 
 def expression1():
 	global tok
-	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' or tok['lexeme']=='else' or tok['lexeme']==']' or tok['lexeme']=='then' or tok['lexeme']=='do':
+	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' or \
+	tok['lexeme']=='else' or tok['lexeme']==']' or tok['lexeme']=='then' or tok['lexeme']=='do':
 		return
 	elif tok['tokenType']=='RELOP':
 		matchByType('RELOP')
@@ -165,7 +174,8 @@ def expression1():
 
 def expression():
 	global tok
-	if tok['tokenType']=='ID' or tok['lexeme']=='(' or tok['lexeme']=='+' or tok['lexeme']=='-' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
+	if tok['tokenType']=='ID' or tok['lexeme']=='(' or tok['lexeme']=='+' or \
+	tok['lexeme']=='-' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
 		simple_expression()
 		expression1()
 	else:
@@ -185,7 +195,8 @@ def expression_list1():
 
 def expression_list():
 	global tok
-	if tok['tokenType']=='ID' or tok['lexeme']=='(' or tok['lexeme']=='+' or tok['lexeme']=='-' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
+	if tok['tokenType']=='ID' or tok['lexeme']=='(' or tok['lexeme']=='+' or tok['lexeme']=='-'\
+	or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
 		expression()
 		expression_list1()
 	else:
@@ -194,7 +205,12 @@ def expression_list():
 
 def variable1():
 	global tok
-	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' or tok['lexeme']=='else' or tok['lexeme']==']' or tok['tokenType']=='ASSIGNOP' or tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or tok['lexeme']=='then' or tok['lexeme']=='do':
+	print "variable1"
+	print tok
+	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' \
+	or tok['lexeme']=='else' or tok['lexeme']==']' or tok['tokenType']=='ASSIGNOP' or \
+	tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or \
+	tok['lexeme']=='then' or tok['lexeme']=='do':
 		return
 	elif tok['lexeme']=='[':
 		matchByLexeme('[')
@@ -259,7 +275,7 @@ def statement_list1():
 
 def statement_list():
 	global tok
-	if tok['lexeme']=='begin' or tok['lexeme']=='if' or tok['lexeme']=='while' or tok['tokentype']=='ID':
+	if tok['lexeme']=='begin' or tok['lexeme']=='if' or tok['lexeme']=='while' or tok['tokenType']=='ID':
 		statement()
 		statement_list1()
 	else:
@@ -268,7 +284,7 @@ def statement_list():
 
 def compound_statement1():
 	global tok
-	if tok['lexeme']=='begin' or tok['lexeme']=='if' or tok['lexeme']=='while' or tok['tokentype']=='ID':
+	if tok['lexeme']=='begin' or tok['lexeme']=='if' or tok['lexeme']=='while' or tok['tokenType']=='ID':
 		statement_list()
 		matchByLexeme('end')
 	elif tok['lexeme']=='end':
@@ -304,7 +320,7 @@ def parameter_list1():
 def parameter_list():
 	global tok
 	if tok['tokenType']=="ID":
-		matchByByType('ID')
+		matchByType('ID')
 		matchByLexeme(':')
 		typeProd()
 		parameter_list1()

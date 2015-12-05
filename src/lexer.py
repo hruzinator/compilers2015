@@ -459,9 +459,21 @@ machines.append(idMachine)
 catchAllMachine=LexerFSM()
 def handle(c):#start state
 	assert type(c) is str and len(c)==1
+	global buff
+	global buffPtr
 	if ord(c) is 3 :  #end of file
 		return {'tokenType':'EOF', 'lexeme':"$", 'attribute':"endOfFile"}
-	return {'tokenType':"lexerr", 'lexeme':c, 'attribute':"Unrecognized Symbol"}
+	seq=c
+	while reservedWordTable.hasStartsWith(seq):
+		lookupResult = reservedWordTable.lookup(seq)
+		if lookupResult is not None:
+			return lookupResult
+		buffPtr+=1
+		if buffPtr >= len(buff):
+			break
+		seq+=buff[buffPtr]
+		
+	return {'tokenType':"lexerr", 'lexeme':seq, 'attribute':"Unrecognized Symbol"}
 catchAllMachine.addState("__start__", handle)
 catchAllMachine.setStart("__start__")
 machines.append(catchAllMachine)
