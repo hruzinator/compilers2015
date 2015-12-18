@@ -33,20 +33,33 @@ for l in lines:
     token={'lexeme':lexeme, 'tokenType':tokenType, 'attribute':attribute}
     rwTable.insert(token)
 
+lexer.defineReservedWordTable(rwTable)
+
 #get an array of lines
 lines = open(sys.argv[1], "r").readlines()
 lines[-1]+='\x03'
 lineNum=1
 listingFile = open('lineListing.txt', 'w')
 
-lexer.defineReservedWordTable(rwTable)
+listingFile = open('lineListing.txt', 'w')
+tokenFile = open('tokenFile.txt', 'w')
+
+#tokenFile.write()
+
+lineNum=1
 for l in lines:
     listingFile.write(str(lineNum) + ": " + l[:-1] + '\n')
     lexer.feedLexer(l)
     nextToken=lexer.getToken()
-	#TODO should search until endOfFile token or error or noTokens
+
     while nextToken is not "noTokens":
         if nextToken != None:
-			listingFile.write(str(nextToken) + '\n')
-        nextToken=lexer.getToken()
+            if nextToken['tokenType'] == 'LEXERR':
+                listingFile.write(str(nextToken) + '\n')
+            tokenFile.write(str(lineNum) + ": " + str(nextToken) + '\n')
+            nextToken=lexer.getToken()
     lineNum+=1
+print "lexical analysis is complete"
+
+#parser.setup(lexer, rwTable)
+#parser.parse()

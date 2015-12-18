@@ -11,7 +11,7 @@ program fullProg(xVar, yVar);
 	end;
 
 
-	procedure stupid;
+	procedure aProc;
 		var w: integer;
 		begin
 			w := x div y;
@@ -30,8 +30,15 @@ program fullProg(xVar, yVar);
 		end;
 	
 	begin
-		read(x, y);
-		write(gcd(x, y))
+		var a: real; b: real; c: real; d: real;
+		a:=42.E4;
+		b := 42.0E2;
+		c := -42.6E;
+		d := 42.0EA;
+		x := 17;
+		y := -4;
+		gcd(x, y);
+		aProc()
 	end
-{period at the end. Make sure to also test with extra chars after period}
+{this is a comment}
 .

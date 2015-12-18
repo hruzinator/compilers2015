@@ -1,2 +1,1 @@
-var x : integer;
-var x : integer;
+progra
