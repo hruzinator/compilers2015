@@ -49,7 +49,7 @@ lineNum=1
 for l in lines:
     lexer.feedLexer(l)
     nextToken=lexer.getToken()
-
+    listingFile.write(str(lineNum) + ": " + l[:-1] + '\n')
     while nextToken is not "noTokens":
         if nextToken != None:
             if nextToken['tokenType'] == 'LEXERR':

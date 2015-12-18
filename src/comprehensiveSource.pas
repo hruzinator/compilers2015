@@ -32,11 +32,12 @@ program fullProg(xVar, yVar);
 	begin
 		var a: real; b: real; c: real; d: real;
 		a:=42.E4;
-		b := 42.0E2;
-		c := -42.6E;
+		b :=42.0E2;
+		c:= -42.6E;
 		d := 42.0EA;
 		x := 17;
-		y := -4;
+		y :=-4;
+		a := a + b;
 		gcd(x, y);
 		aProc()
 	end

@@ -473,7 +473,7 @@ def handle(c):#start state
 			break
 		seq+=buff[buffPtr]
 		
-	return {'tokenType':"lexerr", 'lexeme':seq, 'attribute':"Unrecognized Symbol"}
+	return {'tokenType':"LEXERR", 'lexeme':seq, 'attribute':"Unrecognized Symbol"}
 catchAllMachine.addState("__start__", handle)
 catchAllMachine.setStart("__start__")
 machines.append(catchAllMachine)
@@ -545,9 +545,7 @@ def getToken():
 	#check if machineResult is a non-empty token
 	if type(machineResult) is dict and bool(machineResult) is True:
 	    isToken = True
-    if machineResult['tokenType'] is 'lexerr':
-	#TODO fix
-	pass        
+    #if machineResult['tokenType'] is 'LEXERR':       
 	#print "Lexical Error! " + str(machineResult['lexeme'])+ " is not a valid token."
         #sys.exit()
     return machineResult

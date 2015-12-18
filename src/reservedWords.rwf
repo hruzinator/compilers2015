@@ -24,4 +24,3 @@
 "+" SIGNOP positive
 "-" SIGNOP negative
 "." KEYWORD progEnd
-"$" EOF endOfFile
