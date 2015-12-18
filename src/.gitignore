@@ -1,7 +1,9 @@
 test.txt
+tokenFile.txt
 lineListing.txt
 *.pyc
 goodSourceTest
 comprehensiveSource
 goodSourceTest.o
 comprehensiveSource.o
+testingFile.pas

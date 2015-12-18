@@ -30,3 +30,10 @@ class symbolTable:
         else:
             return None
 
+    #looks to see if there is a lexeme that starts with a character sequence
+    def hasStartsWith(self, sequence):
+        assert type(sequence) is str
+        for symToken in self.symtable:
+        	if str(symToken['lexeme']).startswith(sequence):
+                    return True
+        return False

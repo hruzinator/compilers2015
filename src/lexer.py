@@ -3,6 +3,7 @@
 Lexer for compiler
 '''
 from types import *
+import sys
 
 class LexerFSM:
     def __init__(self):
@@ -458,9 +459,21 @@ machines.append(idMachine)
 catchAllMachine=LexerFSM()
 def handle(c):#start state
 	assert type(c) is str and len(c)==1
+	global buff
+	global buffPtr
 	if ord(c) is 3 :  #end of file
-		return {'tokenType':'EOF', 'lexeme':"$", 'attribute':"End of File"}
-	return {'tokenType':"lexerr", 'lexeme':c, 'attribute':"Unrecognized Symbol"}
+		return {'tokenType':'EOF', 'lexeme':"$", 'attribute':"endOfFile"}
+	seq=c
+	while reservedWordTable.hasStartsWith(seq):
+		lookupResult = reservedWordTable.lookup(seq)
+		if lookupResult is not None:
+			return lookupResult
+		buffPtr+=1
+		if buffPtr >= len(buff):
+			break
+		seq+=buff[buffPtr]
+		
+	return {'tokenType':"lexerr", 'lexeme':seq, 'attribute':"Unrecognized Symbol"}
 catchAllMachine.addState("__start__", handle)
 catchAllMachine.setStart("__start__")
 machines.append(catchAllMachine)
@@ -515,18 +528,26 @@ def getToken():
     global buff
     global buffPtr
     global machines
-    if len(buff) is 0:
-        return "noTokens"
 
-    machineResult=False
-    i=0
-	#try all the machines
-    while machineResult is False and i < len(machines):
-        machineResult=tryMachine(machines[i])
-        i+=1
+    isToken = False
+    while not isToken:
+
+        if len(buff) is 0:
+            return "noTokens"
+
+        machineResult=False
+        i=0
+        #try all the machines
+        while (machineResult is False or machineResult is None) and i < len(machines):
+            machineResult=tryMachine(machines[i])
+            i+=1
     
-	if machineResult is None: #machine passed by a non-token generating substring
-		return None #TODO fix
-    assert type(machineResult) is dict
-    if bool(machineResult) is True: #the result was not tokenless
-    	return machineResult
+	#check if machineResult is a non-empty token
+	if type(machineResult) is dict and bool(machineResult) is True:
+	    isToken = True
+    if machineResult['tokenType'] is 'lexerr':
+	#TODO fix
+	pass        
+	#print "Lexical Error! " + str(machineResult['lexeme'])+ " is not a valid token."
+        #sys.exit()
+    return machineResult

@@ -10,6 +10,7 @@ files.
 
 import sys
 import lexer
+import parser
 from symbolTable import symbolTable
 
 def printHelp():
@@ -38,8 +39,6 @@ lexer.defineReservedWordTable(rwTable)
 #get an array of lines
 lines = open(sys.argv[1], "r").readlines()
 lines[-1]+='\x03'
-lineNum=1
-listingFile = open('lineListing.txt', 'w')
 
 listingFile = open('lineListing.txt', 'w')
 tokenFile = open('tokenFile.txt', 'w')
@@ -48,7 +47,6 @@ tokenFile = open('tokenFile.txt', 'w')
 
 lineNum=1
 for l in lines:
-    listingFile.write(str(lineNum) + ": " + l[:-1] + '\n')
     lexer.feedLexer(l)
     nextToken=lexer.getToken()
 
