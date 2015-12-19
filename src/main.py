@@ -43,7 +43,8 @@ lines[-1]+='\x03'
 listingFile = open('lineListing.txt', 'w')
 tokenFile = open('tokenFile.txt', 'w')
 
-#tokenFile.write()
+tokenFile.write("line No.".center(10) + "Lexeme".ljust(15) \
++ "Token Type".ljust(15) + "attribute".ljust(40) + '\n')
 
 lineNum=1
 for l in lines:
@@ -54,7 +55,8 @@ for l in lines:
         if nextToken != None:
             if nextToken['tokenType'] == 'LEXERR':
                 listingFile.write(str(nextToken) + '\n')
-            tokenFile.write(str(lineNum) + ": " + str(nextToken) + '\n')
+            tokenFile.write(str(lineNum).center(10) + str(nextToken['lexeme']).ljust(15) \
+            + str(nextToken['tokenType']).ljust(15) + str(nextToken['attribute']).ljust(40) + '\n')
             nextToken=lexer.getToken()
     lineNum+=1
 print "lexical analysis is complete"
