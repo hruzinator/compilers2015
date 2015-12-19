@@ -12,6 +12,7 @@ class LexerFSM:
         self.currentState = None
         self.isRunning = False
 
+
     #handler is a function type
     def addState(self, name, handler):
         #input validation
@@ -92,6 +93,7 @@ buff=[]
 buffPtr=0
 machines=[] #order is important. Make sure machines are priority ordered
 
+counter=0 #a counter available for use by some of the machines
 
 #define whitespace machine
 wsMachine=LexerFSM()
@@ -283,12 +285,16 @@ commentMachine.setStart("__start__")
 machines.append(commentMachine)
 
 #define longreal machine (must be before reals to ensure we don't premeturely tokenize a real out of a longreal)
+#note: only longreal machine has to perform length checks, as any errors with lengths will be checked here. If
+#we were to put this in the other machines, which run after, it would be redundant and never run.
 lrMachine=LexerFSM()
 def handle(c): #start
     assert type(c) is str and len(c)==1
     d=ord(c)
     #check if d is a number
     if (48<=d<=57):
+        global counter
+        counter=1
         return  "x"
     else:
         global buffPtr
@@ -298,39 +304,65 @@ lrMachine.addState("__start__", handle)
 
 def handle(c):#x
     assert type(c) is str and len(c)==1
+
+    global buffPtr
+    global buff
+    global counter
+    lexeme="".join(buff[:buffPtr])
+
+    
     d=ord(c)
     #check if d is a number
     if (48<=d<=57):
+        if counter>=5:
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"Extra Long Integer"} 
+        counter+=1
         return  "x"
     elif c is '.':
+        counter=0
         return "y"
     else:
-        global buffPtr
         buffPtr-=1
         return None
 lrMachine.addState("x", handle)
 def handle(c):#y
     assert type(c) is str and len(c)==1
+
+    global buff
+    global buffPtr
+    global counter
+    lexeme="".join(buff[:buffPtr]) 
+
     d=ord(c)
     #check if d is a number
     if (48<=d<=57):
+        if counter>=5:
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"Extra Long Fractional Part"}
+        counter+=1
         return  "y"
-    elif c is 'E':
+    elif c is 'E' and counter is not 0:
+        counter=0
         return "z"
     else:
-        global buffPtr
         buffPtr-=1
         return None
 lrMachine.addState("y", handle)
 def handle(c):#z
     assert type(c) is str and len(c)==1
+
+    global buffPtr
+    global buff
+    global counter
+    lexeme="".join(buff[:buffPtr])
+
     d=ord(c)
     #check if d is a number
     if (48<=d<=57):
+        if counter>=2:
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"Extra Long Exponent part"} 
+        counter+=1
         return  "z"
     else:
-        global buffPtr
-        global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
         return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"longReal"}
@@ -418,6 +450,8 @@ def handle(c): #start
     l=ord(c)
     #check if l is a capital or lowercase letter
     if (65<=l<=90) or (97<=l<=122):
+        global counter
+        counter=1
         return  "letterNum"
     else:
         buffPtr-=1
@@ -425,17 +459,25 @@ def handle(c): #start
 idMachine.addState("__start__", handle)
 def handle(c): #letterNum
     assert type(c) is str and len(c)==1
+
+    global buffPtr
+    global buff
+    global counter
+    lexeme="".join(buff[:buffPtr])
+
+    if counter>10:
+        return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"Extra Long Identifier"} 
+
     ld=ord(c)
     #check if ld is a letter
     if (65<=ld<=90) or (97<=ld<=122):
+        counter+=1
         return  "letterNum"
     #check if ld is a number
     elif (48<=ld<=57):
+        counter+=1
         return  "letterNum"
     else:
-        global buffPtr
-        global buff
-        lexeme="".join(buff[:buffPtr])
         buffPtr-=1
 		#check if lexeme is a reserved word
         result=reservedWordTable.lookup(lexeme)
