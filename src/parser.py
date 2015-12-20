@@ -246,7 +246,7 @@ def expression_list1():
 		return
 	else:
 		syntaxError("expression_list1", tok['lexeme'])
-		synch([',', ')'])
+		synch([',', ')'], [])
 		if tok['lexeme'] == ',':
 			expression_list1()
 		return
@@ -301,7 +301,7 @@ def statement1():
 		statement()
 	else:
 		syntaxError("statement1", tok['lexeme'])
-		synch([';', 'end', 'else'])
+		synch([';', 'end', 'else'], [])
 		statement1()
 
 def statement():
@@ -333,6 +333,7 @@ def statement():
 def statement_list1():
 	global tok
 	if tok['lexeme']==';':
+		matchByLexeme(';')
 		statement()
 		statement_list1()
 	elif tok['lexeme']=='end':
@@ -377,7 +378,7 @@ def compound_statement():
 		compound_statement1()
 	else:
 		syntaxError("compound_statement", tok['lexeme'])
-		synch(['begin', '.', ';', 'else', 'end'])
+		synch(['begin', '.', ';', 'else', 'end'], [])
 		if tok['lexeme']=='begin':
 			compound_statement()
 		return
@@ -394,7 +395,7 @@ def parameter_list1():
 		parameter_list1()
 	else:
 		syntaxError("parameter_list1", tok['lexeme'])
-		synch([')', ';'])
+		synch([')', ';'], [])
 		parameter_list1()
 
 
@@ -440,7 +441,7 @@ def subprogram_head():
 		subprogram_head1()
 	else:
 		syntaxError("subprogram_head", tok['lexeme'])
-		synch(['function', 'var', 'begin'])
+		synch(['function', 'var', 'begin'], [])
 		if tok['lexeme']=='function':
 			subprogram_head()
 		return
@@ -454,7 +455,7 @@ def subprogram_declaration1_1():
 		compound_statement()
 	else:
 		syntaxError("subprogram_declaration1_1", tok['lexeme'])
-		synch(['function', 'begin', ';'])
+		synch(['function', 'begin', ';'], [])
 		if tok['lexeme']!=';':
 			subprogram_declaration1_1()
 		return
@@ -471,7 +472,7 @@ def subprogram_declaration1():
 		compound_statement()
 	else:
 		syntaxError("subprogram_declaration1", tok['lexeme'])
-		synch(['var', 'function', 'begin', ';'])
+		synch(['var', 'function', 'begin', ';'], [])
 		if tok['lexeme']!=';':
 			subprogram_declaration1()
 		return
@@ -483,7 +484,7 @@ def subprogram_declaration():
 		subprogram_declaration1()
 	else:
 		syntaxError("subprogram_declaration", tok['lexeme'])
-		synch(['function', ';'])
+		synch(['function', ';'], [])
 		if tok['lexeme']!=';':
 			subprogram_declaration()
 		return
@@ -509,7 +510,7 @@ def subprogram_declarations():
 		subprogram_declarations1()
 	else:
 		syntaxError("subprogram_declarations", tok['lexeme'])
-		synch(['function', 'begin'])
+		synch(['function', 'begin'], [])
 		if tok['lexeme']=='funciton':
 			subrpogram_declarations()
 		return
@@ -522,7 +523,7 @@ def standard_type():
 		matchByLexeme('real')
 	else:
 		syntaxError("standard_type", tok['lexeme'])
-		synch(['integer', 'real', ';', ')'])
+		synch(['integer', 'real', ';', ')'], [])
 		if tok['lexeme'] in ['integer', 'real']:
 			standard_type()
 		return
@@ -575,7 +576,7 @@ def declarations():
 		declarations1()
 	else:
 		syntaxError("declarations", tok['lexeme'])
-		synch(['var', 'function', 'begin'])
+		synch(['var', 'function', 'begin'],[])
 		if tok['lexeme']=='var':
 			declarations()
 		return
@@ -589,7 +590,7 @@ def identifier_list1():
 		return
 	else:
 		syntaxError("identifier_list1", tok['lexeme'])
-		synch([')', ','])	
+		synch([')', ','], [])	
 		identifier_list1()
 		return
 
@@ -616,7 +617,7 @@ def program1_1():
 		matchByLexeme('.')
 	else:
 		syntaxError("program1_1", tok['lexeme'])
-		synch(['function', 'begin'])
+		synch(['function', 'begin'], [])
 		program1_1()
 		return
 
@@ -635,7 +636,7 @@ def program1():
 		matchByLexeme('.')
 	else:
 		syntaxError("program1", tok['lexeme'])
-		synch(["var", "function", "begin"])
+		synch(["var", "function", "begin"], [])
 		program1()
 		return
 
@@ -651,7 +652,7 @@ def program():
 		program1()
 	else:
 		syntaxError("program", tok['lexeme'])
-		synch('program')
+		synch(['program'], [])
 		program()
 		return
 
