@@ -23,17 +23,16 @@ class symbolTable:
         elif type(token) is str:
             tokName = token
         else:
-            assert(False)
+            assert False
         for symToken in self.symtable:
             if tokName==symToken['lexeme']:
                 return symToken
-        else:
-            return None
+        return None
 
     #looks to see if there is a lexeme that starts with a character sequence
     def hasStartsWith(self, sequence):
         assert type(sequence) is str
         for symToken in self.symtable:
-        	if str(symToken['lexeme']).startswith(sequence):
-                    return True
+            if str(symToken['lexeme']).startswith(sequence):
+                return True
         return False
