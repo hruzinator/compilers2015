@@ -390,6 +390,8 @@ def handle(c):#x
     if (48<=d<=57):
         return  "x"
     elif c is '.':
+        global counter
+        counter=0 #ensure we have > 0 y digits following
         return "y"
     else:
         global buffPtr
@@ -403,7 +405,11 @@ def handle(c):#y
     if (48<=d<=57):
         return  "y"
     else:
+        global counter
         global buffPtr
+        if counter==0:
+            buffPtr-=1
+            return None
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
@@ -500,20 +506,24 @@ machines.append(idMachine)
 #define keyword machine
 catchAllMachine=LexerFSM()
 def handle(c):#start state
-	assert type(c) is str and len(c)==1
-	global buff
-	global buffPtr
-	if ord(c) is 3 :  #end of file
-		return {'tokenType':'EOF', 'lexeme':"$", 'attribute':"endOfFile"}
-	seq=c
-	while reservedWordTable.hasStartsWith(seq):
-		lookupResult = reservedWordTable.lookup(seq)
-		if lookupResult is not None:
-			return lookupResult
-		buffPtr+=1
-		if buffPtr >= len(buff):
-			break
-		seq+=buff[buffPtr]
+    assert type(c) is str and len(c)==1
+    global buff
+    global buffPtr
+    if ord(c) is 3 :  #end of file
+    	return {'tokenType':'EOF', 'lexeme':"$", 'attribute':"endOfFile"}
+    seq=c
+    while reservedWordTable.hasStartsWith(seq):
+        buffPtr+=1
+        if buffPtr >= len(buff):
+            break
+        global seq
+        seq+=buff[buffPtr]
+
+    buffPtr-=1
+    seq=seq[:-1]
+    lookupResult = reservedWordTable.lookup(seq)
+    if lookupResult is not None:
+        return lookupResult
 		
 	return {'tokenType':"LEXERR", 'lexeme':seq, 'attribute':"Unrecognized Symbol"}
 catchAllMachine.addState("__start__", handle)
