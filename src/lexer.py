@@ -398,13 +398,14 @@ def handle(c):#x
         return None
 rMachine.addState("x", handle)
 def handle(c):#y
+    global counter
     assert type(c) is str and len(c)==1
     d=ord(c)
     #check if d is a number
     if (48<=d<=57):
+        counter+=1
         return  "y"
     else:
-        global counter
         global buffPtr
         if counter==0:
             buffPtr-=1
