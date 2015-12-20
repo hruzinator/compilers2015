@@ -43,7 +43,7 @@ class LexerFSM:
         #begin by checking that inital conditions are ok for starting the machine
         if len(self.states) == 0:
             print "States must be added with addState(), and a startState needs to be defined, before the Finite State Machine can run"
-            return #TODO empty returns (here and elsewhere) could cause problems
+            return
         if self.startState is None:
             print "Error! Cannot run until the startState has been defined with setStart"
             return
@@ -99,7 +99,6 @@ counter=0 #a counter available for use by some of the machines
 wsMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
-    #TODO may just want whitespace only. Not the different types of space.
     if c == ' ' or c == '\t' or c == '\b': return {}
     else:
         global buffPtr
@@ -194,7 +193,7 @@ def handle(c):#'o'
         global buffPtr
         buffPtr-=2
         return None
-addopMachine.addState("o", handle) #TODO an identifier could technically be or43 or something stupid. Make sure to address this
+addopMachine.addState("o", handle)
 def handle(c):#'or' -> must make sure word ends (i.e. oreo is technically an ID or reserved word)
     assert type(c) is str and len(c)==1
     #check to see if the next char is a letter
@@ -413,7 +412,7 @@ def handle(c):#y
         global buff
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
-        return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"realNum"} #TODO what are we doing with this attribute???
+        return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"realNum"}
 rMachine.addState("y", handle)
 rMachine.setStart("__start__")
 machines.append(rMachine)
@@ -441,13 +440,12 @@ def handle(c):
         global buff
         lexeme="".join(buff[0:buffPtr])
         buffPtr-=1
-        return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"intNum"} #TODO what to do about attribute???
+        return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"intNum"}
 intMachine.addState("num", handle)
 intMachine.setStart("__start__")
 machines.append(intMachine)
 
 #define ID machine
-#TODO implement restrictions on the size of ID
 idMachine=LexerFSM()
 def handle(c): #start
     global buffPtr
@@ -493,7 +491,7 @@ def handle(c): #letterNum
         global symTable
         result=symTable.insert(token)
         if result is not None:
-            ptr=hex(id(result)) #TODO change in favor of better pointer scheme
+            ptr=hex(id(result))
             token['attribute']=ptr
         else:
             result=symTable.lookup(token['lexeme'])
@@ -574,7 +572,7 @@ def feedLexer(sourceString):
 
 # Get the next token
 #returns:
-#   None if there are no complete tokens in the buffer TODO this is bad. ALWAYS return a token!
+#   None if there are no complete tokens in the buffer.
 #   The three tuple of the next token if the next token exists
 def getToken():
     global buff
