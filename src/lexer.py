@@ -518,13 +518,14 @@ def handle(c):#start state
             break
         seq+=buff[buffPtr]
 
-    buffPtr-=1
-    seq=seq[:-1]
+    if len(seq) is not 1: #did not got through loop
+        buffPtr-=1
+        seq=seq[:-1]
     lookupResult = reservedWordTable.lookup(seq)
     if lookupResult is not None:
         return lookupResult
-		
-	return {'tokenType':"LEXERR", 'lexeme':seq, 'attribute':"Unrecognized Symbol"}
+    else:	
+	   return {'tokenType':"LEXERR", 'lexeme':seq, 'attribute':"Unrecognized Symbol"}
 catchAllMachine.addState("__start__", handle)
 catchAllMachine.setStart("__start__")
 machines.append(catchAllMachine)
