@@ -498,7 +498,7 @@ def subprogram_declarations1():
 		return
 	else:
 		syntaxError("subprogram_declarations1", tok['lexeme'])
-		synch(['function', 'begin'])
+		synch(['function', 'begin'], [])
 		subprogram_declarations1()
 
 def subprogram_declarations():

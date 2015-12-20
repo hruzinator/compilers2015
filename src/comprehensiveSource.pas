@@ -1,6 +1,7 @@
 
 program fullProg(xVar, yVar);
-	var x, y: integer;
+	var x: integer;
+	var y: integer;
 	var z: real;
 	var someArray: array[1..5] of real; {inline comment}
 	
@@ -30,7 +31,10 @@ program fullProg(xVar, yVar);
 		end;
 	
 	begin
-		var a: real; b: real; c: real; d: real;
+		var a: real;
+		var b: real; 
+		var c: real;
+		var d: real;
 		a:=42.E4;
 		b :=42.0E2;
 		c:= -42.6E;
