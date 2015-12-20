@@ -31,3 +31,12 @@ supercalafragalisticexpialadoshus {identifier that is too long}
 123456.123456
 123456.123456E1
 12345.12345E123
+{---extra tests---}
+var a: real;
+var b: real; 
+var c: real;
+var d: real;
+a:=42.E4;
+b :=42.0E2;
+c:= -42.6E;
+d := 42.0EA;

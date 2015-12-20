@@ -5,15 +5,14 @@ program fullProg(xVar, yVar);
 	var z: real;
 	var someArray: array[1..5] of real; {inline comment}
 	
-	function gcd (a, b : integer) : integer;
+	function gcd (a: integer; b : integer) : integer;
 	begin
 		if b = 0 then gcd:=a {ensure that gcd id is the same throughout}
 		else gcd := gcd(b, a mod b)
 	end;
 
 
-	procedure aProc;
-		var w: integer;
+	function aProc (w: integer) : integer;
 		begin
 			w := x div y;
 			while  w > 0 do
@@ -31,19 +30,10 @@ program fullProg(xVar, yVar);
 		end;
 	
 	begin
-		var a: real;
-		var b: real; 
-		var c: real;
-		var d: real;
-		a:=42.E4;
-		b :=42.0E2;
-		c:= -42.6E;
-		d := 42.0EA;
-		x := 17;
-		y :=-4;
-		a := a + b;
+		var x := 17;
+		var y :=-4;
 		gcd(x, y);
-		aProc()
+		aProc(x)
 	end
 {this is a comment}
 .
