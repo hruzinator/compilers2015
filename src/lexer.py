@@ -516,7 +516,6 @@ def handle(c):#start state
         buffPtr+=1
         if buffPtr >= len(buff):
             break
-        global seq
         seq+=buff[buffPtr]
 
     buffPtr-=1
