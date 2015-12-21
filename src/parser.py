@@ -33,9 +33,7 @@ def synch(lexemes, types):
 
 	while tok['lexeme'] not in lexemes and tok['tokenType'] not in types:
 		hasSyntaxErrors = True
-		print "discarding token: " + str(tok)
-		#print "Syntax Error: Got " + tok['lexeme'] + " of type " + tok['tokenType'] + ". Expecting  lexemes " + \
-		#	str(lexemes) + " or types " + str(types) #TODO have it not print out EOF
+		# print "discarding token: " + str(tok)
 		if tok['tokenType'] == 'EOF':
 			print "Parsing completed with errors"
 			sys.exit()
@@ -56,7 +54,7 @@ def matchByLexeme(t):
 	assert type(tok) is dict
 	if tok['lexeme']==t:
 		if tok['tokenType']!='EOF': #do not overrun the buffer
-			print "matched: " + str(tok)
+			# print "matched: " + str(tok)
 			tok = lexer.getToken()
 		else:
 			finish()
@@ -71,7 +69,7 @@ def matchByType(t):
 	assert type(tok) is dict
 	if tok['tokenType']==t:
 		if tok['tokenType']!='EOF': #do not overrun the buffer
-			print "matched: " + str(tok)
+			# print "matched: " + str(tok)
 			tok = lexer.getToken() 
 		else:
 			finish()
