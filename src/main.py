@@ -54,7 +54,7 @@ for l in lines:
         if nextToken != None:
             if nextToken['tokenType'] == 'LEXERR':
                 listingFile.write(nextToken['tokenType'].ljust(10) + \
-                    nextToken['attribute'].ljust(28) + nextToken['lexeme'] + '\n')
+                    nextToken['attribute'].ljust(40) + nextToken['lexeme'] + '\n')
 
             tokenFile.write(str(lineNum).center(10) + nextToken['lexeme'].ljust(17) \
             + nextToken['tokenType'].ljust(15) + nextToken['attribute'].ljust(40) + '\n')
