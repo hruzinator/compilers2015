@@ -318,8 +318,8 @@ def handle(c):#x
         counter+=1
         return  "x"
     elif c is '.':
-        if lexeme[0]=='0':
-            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"trailing zeroes in integer part"}
+        if lexeme[0]=='0' and counter>1:
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"leading zeroes in integer part"}
         counter=0
         return "y"
     else:
@@ -342,12 +342,12 @@ def handle(c):#y
         counter+=1
         return  "y"
     elif c is 'E' and counter is not 0:
-        if lexeme[-1]=='0':
+        if lexeme[-1]=='0' and counter>1:
             return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"trailing zeroes in fractional part"}
         counter=0
         return "z"
     else:
-        if lexeme[-1]=='0':
+        if lexeme[-1]=='0' and counter>1:
             return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"trailing zeroes in fractional part"}
         buffPtr=0
         return None
@@ -371,8 +371,8 @@ def handle(c):#z
         if counter==0:
             buffPtr-=1
             return None
-        if lexeme[-1]=='0':
-            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"trailing zeroes in exponential part"}
+        if counter==2 and lexeme[-2]=='0':
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"leading zeroes in exponential part"}
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
         return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"longReal"}
