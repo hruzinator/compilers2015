@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 '''
-Pascal Compiler version 0.1 for CS 4013, Project 1
+Pascal Compiler version 0.1 for CS 4013, Project 2
 Matthew Hruz, 2015, The University of Tulsa
-This python file will handle input from source files and reserved word
-files.
+
+This python file will handle input from source files 
+and reserved word files.
 '''
 
 import sys
@@ -26,7 +27,6 @@ lines = open('reservedWords.rwf', 'r').readlines()
 rwTable=symbolTable()
 for l in lines:
     words=l.split()
-    #TODO assert proper form is adhered to and that tokenType and attribute are valid
     lexeme=words[0].translate(None, '\"')
     tokenType=words[1]
     attribute=words[2]
@@ -45,22 +45,9 @@ tokenFile = open('tokenFile.txt', 'w')
 tokenFile.write("line No.".center(10) + "Lexeme".ljust(17) \
 + "Token Type".ljust(15) + "attribute".ljust(40) + '\n')
 
-lineNum=1
 for l in lines:
     lexer.feedLexer(l)
-    nextToken=lexer.getToken()
-    listingFile.write(str(lineNum) + ": " + l[:-1] + '\n')
-    while nextToken is not "noTokens":
-        if nextToken != None:
-            if nextToken['tokenType'] == 'LEXERR':
-                listingFile.write(nextToken['tokenType'].ljust(10) + \
-                    nextToken['attribute'].ljust(40) + nextToken['lexeme'] + '\n')
-
-            tokenFile.write(str(lineNum).center(10) + nextToken['lexeme'].ljust(17) \
-            + nextToken['tokenType'].ljust(15) + nextToken['attribute'].ljust(40) + '\n')
-            nextToken=lexer.getToken()
-    lineNum+=1
 print "lexical analysis is complete"
 
-#parser.setup(lexer, rwTable)
-#parser.parse()
+parser.setup(lexer, rwTable)
+parser.parse()
