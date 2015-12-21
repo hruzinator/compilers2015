@@ -318,10 +318,12 @@ def handle(c):#x
         counter+=1
         return  "x"
     elif c is '.':
+        if lexeme[0]=='0' and counter>1:
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"leading zeroes in integer part"}
         counter=0
         return "y"
     else:
-        buffPtr-=1
+        buffPtr=0
         return None
 lrMachine.addState("x", handle)
 def handle(c):#y
@@ -340,10 +342,14 @@ def handle(c):#y
         counter+=1
         return  "y"
     elif c is 'E' and counter is not 0:
+        if lexeme[-1]=='0' and counter>1:
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"trailing zeroes in fractional part"}
         counter=0
         return "z"
     else:
-        buffPtr-=1
+        if lexeme[-1]=='0' and counter>1:
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"trailing zeroes in fractional part"}
+        buffPtr=0
         return None
 lrMachine.addState("y", handle)
 def handle(c):#z
@@ -362,6 +368,11 @@ def handle(c):#z
         counter+=1
         return  "z"
     else:
+        if counter==0:
+            buffPtr-=1
+            return None
+        if counter==2 and lexeme[-2]=='0':
+            return {'tokenType':"LEXERR", 'lexeme':lexeme, 'attribute':"leading zeroes in exponential part"}
         lexeme="".join(buff[:buffPtr])
         buffPtr-=1
         return {'tokenType':"NUMBER", 'lexeme':lexeme, 'attribute':"longReal"}
@@ -374,7 +385,7 @@ rMachine=LexerFSM()
 def handle(c): #start
     assert type(c) is str and len(c)==1
     d=ord(c)
-    #check if d is a number
+    # check if d is a number
     if (48<=d<=57):
         return  "x"
     else:
