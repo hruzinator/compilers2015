@@ -30,10 +30,10 @@ program fullProg(xVar, yVar);
 		end;
 	
 	begin
-		var x := 17;
-		var y :=-4;
-		gcd(x, y);
-		aProc(x)
+		x := 17;
+		y :=-4;
+		y := gcd(x, y);
+		x := aProc(x)
 	end
 {this is a comment}
 .
