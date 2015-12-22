@@ -8,16 +8,20 @@ tok = None
 lexer = None
 symTable = None
 rwTable = None
+listingFile = None
+
 #flag to indicate if code is syntax error free
 hasSyntaxErrors = False
 
-def setup(l, rwt):
+def setup(l, rwt, lf):
 	global lexer
 	global symTable
 	global rwTable
+	global listingFile
 	lexer = l
 	symTable = l.symTable
 	rwTable = rwt
+	listingFile = lf
 
 def finish():
 	if hasSyntaxErrors is True:
@@ -44,7 +48,7 @@ def synch(lexemes, types):
 
 def syntaxError(expected, actual):
 	assert type(expected) is str and type(actual) is str
-	print "Syntax error! expecting " + expected + ", got " + actual
+	listingFile.write("Syntax error! expecting " + expected + ", got " + actual + "\n")
 
 '''
 begin match methods
@@ -64,7 +68,6 @@ def matchByLexeme(t):
 		tok = lexer.getToken()
 
 def matchByType(t):
-	#TODO continue to build parse tree
 	global tok
 	assert type(tok) is dict
 	if tok['tokenType']==t:

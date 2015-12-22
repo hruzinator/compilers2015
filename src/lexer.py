@@ -4,6 +4,9 @@ Lexer for compiler
 '''
 from types import *
 import sys
+listingFile = None
+lineNum = 1
+sourceLines = None
 
 class LexerFSM:
     def __init__(self):
@@ -112,7 +115,13 @@ machines.append(wsMachine)
 nlMachine=LexerFSM()
 def handle(c):
     assert type(c) is str and len(c)==1
-    if c == '\n': return {}
+    if c == '\n':
+        global lineNum
+        global sourceLines
+        global listingFile
+        listingFile.write(str(lineNum) + ": " + sourceLines[lineNum-1])
+        lineNum+=1
+        return {}
     else:
         global buffPtr
         buffPtr-=1
@@ -567,8 +576,16 @@ def tryMachine(machine):
     buffPtr=0
     return result
 
-def defineReservedWordTable(s):
+def setup(lf, tf, sl, s):
+    global listingFile
+    global tokenFile
     global reservedWordTable
+    global sourceLines
+
+    listingFile = lf
+    tokenFile = tf
+    sourceLines = sl
+
     if reservedWordTable is not None:
         print "Warning! Symbol table has already been defined. Overriding"
     reservedWordTable=s
@@ -607,7 +624,14 @@ def getToken():
 	#check if machineResult is a non-empty token
 	if type(machineResult) is dict and bool(machineResult) is True:
 	    isToken = True
-    #if machineResult['tokenType'] is 'LEXERR':       
-	#print "Lexical Error! " + str(machineResult['lexeme'])+ " is not a valid token."
-        #sys.exit()
+
+    #write token to token file
+    tokenFile.write(str(lineNum).center(10) + machineResult['lexeme'].ljust(17) \
+            + machineResult['tokenType'].ljust(15) + machineResult['attribute'].ljust(40) + '\n')
+
+    #write LEXERRs to token file
+    if machineResult['tokenType'] == 'LEXERR':
+        listingFile.write(machineResult['tokenType'].ljust(10) + \
+            machineResult['attribute'].ljust(40) + machineResult['lexeme'] + '\n')
+
     return machineResult

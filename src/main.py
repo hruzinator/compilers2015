@@ -33,8 +33,6 @@ for l in lines:
     token={'lexeme':lexeme, 'tokenType':tokenType, 'attribute':attribute}
     rwTable.insert(token)
 
-lexer.defineReservedWordTable(rwTable)
-
 #get an array of lines
 lines = open(sys.argv[1], "r").readlines()
 lines[-1]+='\x03'
@@ -45,9 +43,11 @@ tokenFile = open('tokenFile.txt', 'w')
 tokenFile.write("line No.".center(10) + "Lexeme".ljust(17) \
 + "Token Type".ljust(15) + "attribute".ljust(40) + '\n')
 
+lexer.setup(listingFile, tokenFile, lines, rwTable)
+
 for l in lines:
     lexer.feedLexer(l)
 print "lexical analysis is complete"
 
-parser.setup(lexer, rwTable)
+parser.setup(lexer, rwTable, listingFile)
 parser.parse()
