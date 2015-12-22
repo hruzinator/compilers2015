@@ -47,6 +47,8 @@ def synch(lexemes, types):
 		tok = lexer.getToken()
 
 def syntaxError(expected, actual):
+	global hasSyntaxErrors
+	hasSyntaxErrors = True
 	assert type(expected) is str and type(actual) is str
 	listingFile.write("Syntax error! expecting " + expected + ", got " + actual + "\n")
 
@@ -63,7 +65,6 @@ def matchByLexeme(t):
 		else:
 			finish()
 	else: #syntax error
-		hasSyntaxErrors = True
 		syntaxError(t, tok['lexeme'])
 		tok = lexer.getToken()
 
@@ -78,7 +79,6 @@ def matchByType(t):
 			finish()
 			sys.exit() #TODO is this what we need?
 	else: #syntax error
-		hasSyntaxErrors = True
 		syntaxError(t, tok['tokenType'])
 		tok = lexer.getToken()
 
@@ -92,7 +92,7 @@ def sign():
 	elif tok['lexeme']=='-':
 		matchByLexeme('-')
 	else:
-		syntaxError("+ or -", tok['lexeme'])
+		syntaxError("+, -,  '(' or 'not'", tok['lexeme'])
 		synch(['+', '-', '(' , 'not'], ['ID', 'NUMBER'])
 		if tok['lexeme'] in ['+', '-']: #first
 			sign()
@@ -115,11 +115,11 @@ def factor1():
 		expression_list()
 		matchByLexeme(')')
 	else:
-		syntaxError("factor1", tok['lexeme'])
+		syntaxError("',', ')', ';', 'end', 'else', '[', ']', 'then', 'do', 'MULTOP', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch([',', ')', ';', 'end', 'else', '[', ']', 'then', 'do'], ['MULTOP', 'ADDOP', 'RELOP'])
 		if tok['lexeme'] in ['(', '[', ';', 'else', 'end', 'then', 'do', ']', ',', ')'] or \
 			tok['tokenType'] in ['MULTOP', 'RELOP', 'ADDOP']: #first or follow
-			factor1() #TODO is this right?
+			factor1()
 			return
 		else:
 			print "An error occurred. Check your synch set"
@@ -140,7 +140,7 @@ def factor():
 	elif tok['tokenType']=='NUMBER':
 		matchByType('NUMBER')
 	else:
-		syntaxError("factor", tok['lexeme'])
+		syntaxError("'(', ')', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')', 'NUMBER', 'MULTOP', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch(['(', ')', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')'], \
 		['NUMBER', 'MULTOP', 'ADDOP', 'RELOP'])
 		if tok['lexeme'] in ['(', 'not'] or tok['tokenType'] in ['NUMBER', 'ID']: #first
@@ -159,7 +159,7 @@ def term1():
 	or tok['tokenType']=='EOF': #TODO REMOVE EOF from term1! For testing only!!!
 		return
 	else:
-		syntaxError("term1", tok['lexeme'])
+		syntaxError("';', 'else', 'end', 'then', 'do', ']', ',', ')', 'ADDOP', 'RELOP' or 'MULTOP'", tok['lexeme'])
 		synch([';', 'else', 'end', 'then', 'do', ']', ',', ')'], ['ADDOP', 'RELOP', 'MULTOP'])
 		if tok['tokenType'] == 'MULTOP':
 			term1()
@@ -171,7 +171,7 @@ def term():
 		factor()
 		term1()
 	else:
-		syntaxError("term", tok['lexeme'])
+		syntaxError("'(', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')', 'ID', 'NUMBER', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch(['(', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')'], ['ID', 'NUMBER', 'ADDOP', 'RELOP'])
 		if tok['lexeme'] in ['not', '('] or tok['tokenType'] in ['ID', 'NUMBER']:
 			term()
@@ -188,7 +188,7 @@ def simple_expression1():
 		term()
 		simple_expression1()
 	else:
-		syntaxError("simple_expression1", tok['lexeme'])
+		syntaxError(",', ')', ';', 'end', 'else', ']', 'then', 'do', 'RELOP' or 'ADDOP'", tok['lexeme'])
 		synch([',', ')', ';', 'end', 'else', ']', 'then', 'do'], ['RELOP', 'ADDOP'])
 		if tok['tokenType'] == 'ADDOP':
 			simple_expression1()
@@ -204,7 +204,7 @@ def simple_expression():
 		term()
 		simple_expression1()
 	else:
-		syntaxError("simple_expression", tok['lexeme'])
+		syntaxError("'(', '+', '-', 'not', 'ID' or 'NUMBER'", tok['lexeme'])
 		synch(['(', '+', '-', 'not'], ['ID', 'NUMBER'])
 		if tok['lexeme'] in ['(', 'not', '+', '-'] or tok['tokenType'] in ['NUMBER', 'ID']:
 			simple_expression()
@@ -219,7 +219,7 @@ def expression1():
 		matchByType('RELOP')
 		simple_expression()
 	else:
-		syntaxError("expression1", tok['lexeme'])
+		syntaxError("',', ')', ';', 'end', 'else', ']', 'then', 'do' or RELOP", tok['lexeme'])
 		synch([',', ')', ';', 'end', 'else', ']', 'then', 'do'], ['RELOP'])
 		if tok['tokenType'] == 'RELOP':
 			expression1()
@@ -232,7 +232,7 @@ def expression():
 		simple_expression()
 		expression1()
 	else:
-		syntaxError("expression", tok['lexeme'])
+		syntaxError("'(', '+', '-', 'not', 'else', 'then', 'end', 'do', ']', ',', ')', ';', 'NUMBER' or 'ID'", tok['lexeme'])
 		synch(['(', '+', '-', 'not', 'else', 'then', 'end', 'do', ']', ',', ')', ';'], ['NUMBER', 'ID'])
 		if tok['lexeme'] in ['(', 'not', '+', '-'] or tok['tokenType'] in ['ID', 'NUMBER']:
 			expression()
@@ -246,7 +246,7 @@ def expression_list1():
 	elif tok['lexeme']==')':
 		return
 	else:
-		syntaxError("expression_list1", tok['lexeme'])
+		syntaxError("',' or ')'", tok['lexeme'])
 		synch([',', ')'], [])
 		if tok['lexeme'] == ',':
 			expression_list1()
@@ -259,7 +259,7 @@ def expression_list():
 		expression()
 		expression_list1()
 	else:
-		syntaxError("expression_list", tok['lexeme'])
+		syntaxError("'(', '+', '-', 'not', ')', 'ID' or 'NUMBER'", tok['lexeme'])
 		synch(['(', '+', '-', 'not', ')'], ['ID', 'NUMBER'])
 		if tok['lexeme'] in ['(', 'not', '+', '-'] or tok['tokenType'] in ['ID', 'NUMBER']:
 			expression_list()
@@ -277,7 +277,7 @@ def variable1():
 		expression()
 		matchByLexeme(']')
 	else:
-		syntaxError("variable1", tok['lexeme'])
+		syntaxError("'[', 'else', 'end', 'then', 'do', ']', ',', ')', ';', 'ASSIGNOP', 'MULTOP', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch(['[', 'else', 'end', 'then', 'do', ']', ',', ')', ';'], ['ASSIGNOP', 'MULTOP', 'ADDOP', 'RELOP'])
 		variable1()
 
@@ -287,7 +287,7 @@ def variable():
 		matchByType('ID')
 		variable1()
 	else:
-		syntaxError("an identifier", tok['lexeme'])
+		syntaxError("'ID' or 'ASSIGNOP'", tok['lexeme'])
 		synch([], ['ID', 'ASSIGNOP'])
 		if tok['tokenType']=='ID':
 			variable()
@@ -301,7 +301,7 @@ def statement1():
 		matchByLexeme('else')
 		statement()
 	else:
-		syntaxError("statement1", tok['lexeme'])
+		syntaxError("end, else", tok['lexeme'])
 		synch([';', 'end', 'else'], [])
 		statement1()
 
@@ -325,7 +325,7 @@ def statement():
 		matchByLexeme('do')
 		statement()
 	else:
-		syntaxError("statement", tok['lexeme'])
+		syntaxError("'begin', 'if', 'while', 'else', 'end' or ID", tok['lexeme'])
 		synch(['begin', 'if', 'while', 'else', 'end'], ['ID'])
 		if tok['lexeme'] in ['begin', 'if', 'while'] or tok['tokenType']=='ID':
 			statement()
@@ -340,7 +340,7 @@ def statement_list1():
 	elif tok['lexeme']=='end':
 		return
 	else:
-		syntaxError("statement_list1", tok['lexeme'])
+		syntaxError("';', 'end'", tok['lexeme'])
 		synch([';', 'end'], [])
 		statement_list1()
 		return
@@ -351,7 +351,7 @@ def statement_list():
 		statement()
 		statement_list1()
 	else:
-		syntaxError("statement_list", tok['lexeme'])
+		syntaxError("'begin', 'if', 'while' or ID", tok['lexeme'])
 		synch(['begin', 'if', 'while'], ['ID'])
 		if tok['lexeme']!='end': #just easier
 			statement_list()
@@ -365,7 +365,7 @@ def compound_statement1():
 	elif tok['lexeme']=='end':
 		matchByLexeme('end')
 	else:
-		syntaxError("compound_statement1", tok['lexeme'])
+		syntaxError("'begin', 'if', 'while', 'end', '.', ';' or ID", tok['lexeme'])
 		synch(['begin', 'if', 'while', 'end', '.', ';'], ['ID'])
 		#again, easier.excluding end as I want to try it as FIRST first
 		if tok['lexeme'] not in ['.', ';', 'else']:
@@ -378,7 +378,7 @@ def compound_statement():
 		matchByLexeme('begin')
 		compound_statement1()
 	else:
-		syntaxError("compound_statement", tok['lexeme'])
+		syntaxError("'begin', '.', ';', 'else', or 'end'", tok['lexeme'])
 		synch(['begin', '.', ';', 'else', 'end'], [])
 		if tok['lexeme']=='begin':
 			compound_statement()
@@ -395,7 +395,7 @@ def parameter_list1():
 		typeProd()
 		parameter_list1()
 	else:
-		syntaxError("parameter_list1", tok['lexeme'])
+		syntaxError("')' or ';'", tok['lexeme'])
 		synch([')', ';'], [])
 		parameter_list1()
 
@@ -408,7 +408,7 @@ def parameter_list():
 		typeProd()
 		parameter_list1()
 	else:
-		syntaxError("parameter_list", tok['lexeme'])
+		syntaxError(") or ID", tok['lexeme'])
 		synch([')'], ['ID'])
 		if tok['tokenType'] == 'ID':
 			parameter_list()
@@ -428,7 +428,7 @@ def subprogram_head1():
 		standard_type()
 		matchByLexeme(';')
 	else:
-		syntaxError("subprogram_head1", tok['lexeme'])
+		syntaxError("'(', ':', or 'var'", tok['lexeme'])
 		synch(['(', ':', 'var'], [])
 		if tok['lexeme']!='var':
 			subprogram_head1()
@@ -441,7 +441,7 @@ def subprogram_head():
 		matchByType('ID')
 		subprogram_head1()
 	else:
-		syntaxError("subprogram_head", tok['lexeme'])
+		syntaxError("'function', 'var', or 'begin'", tok['lexeme'])
 		synch(['function', 'var', 'begin'], [])
 		if tok['lexeme']=='function':
 			subprogram_head()
@@ -455,7 +455,7 @@ def subprogram_declaration1_1():
 	elif tok['lexeme']=='begin':
 		compound_statement()
 	else:
-		syntaxError("subprogram_declaration1_1", tok['lexeme'])
+		syntaxError("'function', 'begin', or ';'", tok['lexeme'])
 		synch(['function', 'begin', ';'], [])
 		if tok['lexeme']!=';':
 			subprogram_declaration1_1()
@@ -472,7 +472,7 @@ def subprogram_declaration1():
 	elif tok['lexeme']=='begin':
 		compound_statement()
 	else:
-		syntaxError("subprogram_declaration1", tok['lexeme'])
+		syntaxError("'function' or ';'", tok['lexeme'])
 		synch(['var', 'function', 'begin', ';'], [])
 		if tok['lexeme']!=';':
 			subprogram_declaration1()
@@ -484,7 +484,7 @@ def subprogram_declaration():
 		subprogram_head()
 		subprogram_declaration1()
 	else:
-		syntaxError("subprogram_declaration", tok['lexeme'])
+		syntaxError("'function' or ';'", tok['lexeme'])
 		synch(['function', ';'], [])
 		if tok['lexeme']!=';':
 			subprogram_declaration()
@@ -499,7 +499,7 @@ def subprogram_declarations1():
 	elif tok['lexeme']=='begin':	
 		return
 	else:
-		syntaxError("subprogram_declarations1", tok['lexeme'])
+		syntaxError("'function', or 'begin'", tok['lexeme'])
 		synch(['function', 'begin'], [])
 		subprogram_declarations1()
 
@@ -510,7 +510,7 @@ def subprogram_declarations():
 		matchByLexeme(';')
 		subprogram_declarations1()
 	else:
-		syntaxError("subprogram_declarations", tok['lexeme'])
+		syntaxError("'function', or 'begin'", tok['lexeme'])
 		synch(['function', 'begin'], [])
 		if tok['lexeme']=='funciton':
 			subrpogram_declarations()
@@ -523,7 +523,7 @@ def standard_type():
 	elif tok['lexeme']=='real':
 		matchByLexeme('real')
 	else:
-		syntaxError("standard_type", tok['lexeme'])
+		syntaxError("'integer', 'real', ';', or ')'", tok['lexeme'])
 		synch(['integer', 'real', ';', ')'], [])
 		if tok['lexeme'] in ['integer', 'real']:
 			standard_type()
@@ -543,7 +543,7 @@ def typeProd():
 		matchByLexeme('of')
 		standard_type()
 	else:
-		syntaxError("type", tok['lexeme'])
+		syntaxError("'integer', 'real', 'array', ';', or ')'", tok['lexeme'])
 		synch(['integer', 'real', 'array', ';', ')'], [])
 		if tok['lexeme'] in ['integer', 'real', 'array']:
 			typeProd()
@@ -561,7 +561,7 @@ def declarations1():
 	elif tok['lexeme']=='function' or tok['lexeme']=='begin':
 		return
 	else:
-		syntaxError("declarations1", tok['lexeme'])
+		syntaxError("'var', 'function', or 'begin'", tok['lexeme'])
 		synch(['var', 'function', 'begin'], [])
 		declarations1()
 		return
@@ -576,7 +576,7 @@ def declarations():
 		matchByLexeme(";")
 		declarations1()
 	else:
-		syntaxError("declarations", tok['lexeme'])
+		syntaxError("'var', 'function', or 'begin'", tok['lexeme'])
 		synch(['var', 'function', 'begin'],[])
 		if tok['lexeme']=='var':
 			declarations()
@@ -590,7 +590,7 @@ def identifier_list1():
 	elif tok['lexeme']==")":	
 		return
 	else:
-		syntaxError("identifier_list1", tok['lexeme'])
+		syntaxError("')' or ','", tok['lexeme'])
 		synch([')', ','], [])	
 		identifier_list1()
 		return
@@ -601,7 +601,7 @@ def identifier_list():
 		matchByType('ID')
 		identifier_list1()
 	else:
-		syntaxError("identifier_list", tok['lexeme'])
+		syntaxError("')' or 'ID'", tok['lexeme'])
 		synch([')'], ['ID'])
 		if tok['tokenType']=='ID':
 			identifier_list()
@@ -617,7 +617,7 @@ def program1_1():
 		compound_statement()
 		matchByLexeme('.')
 	else:
-		syntaxError("program1_1", tok['lexeme'])
+		syntaxError("function or begin", tok['lexeme'])
 		synch(['function', 'begin'], [])
 		program1_1()
 		return
@@ -636,7 +636,7 @@ def program1():
 		compound_statement()
 		matchByLexeme('.')
 	else:
-		syntaxError("program1", tok['lexeme'])
+		syntaxError("'var', 'function', or 'begin'", tok['lexeme'])
 		synch(["var", "function", "begin"], [])
 		program1()
 		return

@@ -119,8 +119,9 @@ def handle(c):
         global lineNum
         global sourceLines
         global listingFile
-        listingFile.write(str(lineNum) + ": " + sourceLines[lineNum-1])
-        lineNum+=1
+        if lineNum-1 < len(sourceLines): #check to make sure we are not EOF
+            listingFile.write('\n' + str(lineNum) + ": " + sourceLines[lineNum-1])
+            lineNum+=1
         return {}
     else:
         global buffPtr
@@ -581,10 +582,13 @@ def setup(lf, tf, sl, s):
     global tokenFile
     global reservedWordTable
     global sourceLines
+    global lineNum
 
     listingFile = lf
     tokenFile = tf
     sourceLines = sl
+    listingFile.write(str(lineNum) + ": " + sourceLines[0])
+    lineNum+=1
 
     if reservedWordTable is not None:
         print "Warning! Symbol table has already been defined. Overriding"
