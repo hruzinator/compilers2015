@@ -10,8 +10,9 @@ symTable = None
 rwTable = None
 listingFile = None
 
-#flag to indicate if code is syntax error free
+#flag to indicate if code is error free
 hasSyntaxErrors = False
+hasSemanticErrors = False
 
 def setup(l, rwt, lf):
 	global lexer
@@ -25,11 +26,15 @@ def setup(l, rwt, lf):
 
 def finish():
 	if hasSyntaxErrors is True:
-		print "Parsing completed with errors"
+		print "Syntax Analysis completed with errors"
 		sys.exit()
 	else:
-		print "Parsing is complete"
+		print "Syntax Analysis is complete"
+	if hasSemanticErrors is True:
+		print "Semantic analysis completed with errors"
 		sys.exit()
+	else:
+		print "Semantic Analysis is complete"
 
 def synch(lexemes, types):
 	assert type(lexemes) is list and type(types) is list
@@ -39,18 +44,31 @@ def synch(lexemes, types):
 		hasSyntaxErrors = True
 		# print "discarding token: " + str(tok)
 		if tok['tokenType'] == 'EOF':
-			print "Parsing completed with errors"
-			sys.exit()
+			finish()
 		elif tok['lexeme'] == ';': #just brace for a new line
 			tok = lexer.getToken()
 			break
 		tok = lexer.getToken()
+'''
+def getType(token):
+	if token['tokenType'] is 'ID':
+		tokType = 
+	else:
+		syntaxError('an identifier to be declared prior to use', 'an undefined identifier')
+		return {'type':'ERR'}
+'''
 
 def syntaxError(expected, actual):
 	global hasSyntaxErrors
 	hasSyntaxErrors = True
 	assert type(expected) is str and type(actual) is str
 	listingFile.write("Syntax error! expecting " + expected + ", got " + actual + "\n")
+
+def semanticError(expected, actual):
+	global hasSemanticErrors
+	hasSemanticErrors = True
+	assert type(expected) is str and type(actual) is str
+	listingFile.write("Semantic error! Expecting " + expected + ", got " + actual + "\n")
 
 '''
 begin match methods
@@ -77,7 +95,6 @@ def matchByType(t):
 			tok = lexer.getToken() 
 		else:
 			finish()
-			sys.exit() #TODO is this what we need?
 	else: #syntax error
 		syntaxError(t, tok['tokenType'])
 		tok = lexer.getToken()
@@ -129,11 +146,20 @@ def factor():
 	global tok
 	if tok['lexeme']=='(':
 		matchByLexeme('(')
-		expression()
+		e=expression()
 		matchByLexeme(')')
+		return e #no changes or checks here
 	elif tok['lexeme']=='not':
 		matchByLexeme('not')
-		factor()
+		f1=factor()
+		print f1
+		if f1['type'] == "BOOL":
+			return {'type':"BOOL"}
+		elif f1['type'] == "ERR":
+			return {'type':"ERR"}
+		else:
+			semanticError("BOOL type", f1['type'])
+			return {'type':"ERR"}
 	elif tok['tokenType']=='ID':
 		matchByType('ID')
 		factor1()
@@ -231,6 +257,7 @@ def expression():
 	tok['lexeme']=='-' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
 		simple_expression()
 		expression1()
+		return {'type':"BOOL"}
 	else:
 		syntaxError("'(', '+', '-', 'not', 'else', 'then', 'end', 'do', ']', ',', ')', ';', 'NUMBER' or 'ID'", tok['lexeme'])
 		synch(['(', '+', '-', 'not', 'else', 'then', 'end', 'do', ']', ',', ')', ';'], ['NUMBER', 'ID'])
@@ -662,9 +689,5 @@ def parse():
 	global tok
 	tok = lexer.getToken()
 	program() #starting production
+	#factor() #temporary start production
 	matchByType('EOF')
-	if hasSyntaxErrors is True:
-		print "Parsing completed with errors"
-		sys.exit()
-	else:
-		print "Parsing is complete"

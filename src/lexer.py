@@ -4,6 +4,7 @@ Lexer for compiler
 '''
 from types import *
 import sys
+
 listingFile = None
 lineNum = 1
 sourceLines = None

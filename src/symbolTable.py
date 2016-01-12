@@ -29,6 +29,13 @@ class symbolTable:
                 return symToken
         return None
 
+    def getIDType(self, token):
+        assert token['tokenType'] is 'ID'
+        tokAddr = token['attribute']
+        for symToken in self.symtable:
+            if tokAddr==symToken['attribute']:
+                return symToken['attribute'] #TODO store ID types
+
     #looks to see if there is a lexeme that starts with a character sequence
     def hasStartsWith(self, sequence):
         assert type(sequence) is str
@@ -36,3 +43,7 @@ class symbolTable:
             if str(symToken['lexeme']).startswith(sequence):
                 return True
         return False
+
+    def printSymbolTable(self):
+        for symToken in self.symtable:
+            print symToken
