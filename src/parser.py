@@ -49,14 +49,21 @@ def synch(lexemes, types):
 			tok = lexer.getToken()
 			break
 		tok = lexer.getToken()
+
+'''
+Gets the type of an identifier token
 '''
 def getType(token):
 	if token['tokenType'] is 'ID':
-		tokType = 
+		#TODO return the type of the ID
+		return {'type':'Integer'}
 	else:
 		syntaxError('an identifier to be declared prior to use', 'an undefined identifier')
 		return {'type':'ERR'}
-'''
+
+def checkExpList(expected, actual):
+	#TODO complete
+	return True
 
 def syntaxError(expected, actual):
 	global hasSyntaxErrors
@@ -73,26 +80,37 @@ def semanticError(expected, actual):
 '''
 begin match methods
 '''
+
+'''
+Returns the token matched
+'''
 def matchByLexeme(t):
 	global tok
 	assert type(tok) is dict
 	if tok['lexeme']==t:
 		if tok['tokenType']!='EOF': #do not overrun the buffer
 			# print "matched: " + str(tok)
+			tempTok = tok
 			tok = lexer.getToken()
+			return tok
 		else:
 			finish()
 	else: #syntax error
 		syntaxError(t, tok['lexeme'])
 		tok = lexer.getToken()
 
+'''
+Returns the matched token
+'''
 def matchByType(t):
 	global tok
 	assert type(tok) is dict
 	if tok['tokenType']==t:
 		if tok['tokenType']!='EOF': #do not overrun the buffer
 			# print "matched: " + str(tok)
-			tok = lexer.getToken() 
+			tempTok = tok
+			tok = lexer.getToken()
+			return tempTok
 		else:
 			finish()
 	else: #syntax error
@@ -120,87 +138,116 @@ def sign():
 			print "An error occurred. Check your synch set"
 			assert False
 
-def factor1():
+def factor1(inherited):
 	global tok
 	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' \
 	or tok['lexeme']=='else' or tok['lexeme']=='[' or tok['lexeme']==']' or \
 	tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' \
 	or tok['lexeme']=='then' or tok['lexeme']=='do':
-		variable1()
+		var1 = variable1(inherited)
+		return {'type':var1['type']}
 	elif tok['lexeme']=='(':
 		matchByLexeme('(')
-		expression_list()
+		elAttr = expression_list()
 		matchByLexeme(')')
+		'''if checkExpList(elAttr['type'], ) TODO figure this out'''
+		return
 	else:
 		syntaxError("',', ')', ';', 'end', 'else', '[', ']', 'then', 'do', 'MULTOP', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch([',', ')', ';', 'end', 'else', '[', ']', 'then', 'do'], ['MULTOP', 'ADDOP', 'RELOP'])
 		if tok['lexeme'] in ['(', '[', ';', 'else', 'end', 'then', 'do', ']', ',', ')'] or \
 			tok['tokenType'] in ['MULTOP', 'RELOP', 'ADDOP']: #first or follow
-			factor1()
-			return
+			return factor1(inherited)
 		else:
 			print "An error occurred. Check your synch set"
 			assert False
 
+
 def factor():
 	global tok
+
 	if tok['lexeme']=='(':
 		matchByLexeme('(')
 		e=expression()
 		matchByLexeme(')')
-		return e #no changes or checks here
+		return {'type':e['type']}
+
 	elif tok['lexeme']=='not':
 		matchByLexeme('not')
 		f1=factor()
-		print f1
 		if f1['type'] == "BOOL":
 			return {'type':"BOOL"}
-		elif f1['type'] == "ERR":
-			return {'type':"ERR"}
 		else:
-			semanticError("BOOL type", f1['type'])
+			if f1['type'] != "ERR":
+				semanticError("BOOL type", f1['type'])
 			return {'type':"ERR"}
+
 	elif tok['tokenType']=='ID':
-		matchByType('ID')
-		factor1()
+		idType = getType(matchByType('ID'))
+		f1=factor1(idType)
+		if f1['type']=idType:
+			return {'type':f1['type']}
+		#TODO elif function calls
+		else:
+			if f1['type'] != "ERR":
+				semanticError("BOOL type", f1['type'])
+			return {'type':"ERR"}
+
 	elif tok['tokenType']=='NUMBER':
-		matchByType('NUMBER')
+		numTok = matchByType('NUMBER')
+		if numTok['attribute'] is 'intType':
+			return {'type':"INT"}
+		else #reals and long reals
+			return {'type':"REAL"}
+
 	else:
 		syntaxError("'(', ')', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')', 'NUMBER', 'MULTOP', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch(['(', ')', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')'], \
 		['NUMBER', 'MULTOP', 'ADDOP', 'RELOP'])
 		if tok['lexeme'] in ['(', 'not'] or tok['tokenType'] in ['NUMBER', 'ID']: #first
-			factor()
+			return factor()
 		return #else, follow. We want to return after factor anyway to help us in project 3
 
 def term1():
 	global tok
 	if tok['tokenType']=='MULTOP':
 		matchByType("MULTOP")
-		factor()
-		term1()
+		f=factor()
+		t=term1()
+		if f['type'] == t['type'] or t['type'] == 'VOID': 
+			return {'type': f['type']}
+		else:
+			if f['type'] != 'ERR' and t['type'] != 'ERR':
+				semanticError('matching types on both sides of a MULTOP', 'unmatched types')
+			return {'type':"ERR"}
 	elif tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or tok['lexeme']==';' \
 	or tok['lexeme']=='else' or tok['lexeme']=='end' or tok['lexeme']=='then' or \
 	tok['lexeme']=='do' or tok['lexeme']==']' or tok['lexeme']==',' or tok['lexeme']==')' \
 	or tok['tokenType']=='EOF': #TODO REMOVE EOF from term1! For testing only!!!
-		return
+		return {'type':"VOID"}
 	else:
 		syntaxError("';', 'else', 'end', 'then', 'do', ']', ',', ')', 'ADDOP', 'RELOP' or 'MULTOP'", tok['lexeme'])
 		synch([';', 'else', 'end', 'then', 'do', ']', ',', ')'], ['ADDOP', 'RELOP', 'MULTOP'])
 		if tok['tokenType'] == 'MULTOP':
-			term1()
+			return term1()
 		return
 
 def term():
 	global tok
 	if tok['lexeme']=='(' or tok['lexeme']=='not' or tok['tokenType']=='ID' or tok['tokenType']=='NUMBER':
-		factor()
-		term1()
+		f = factor()
+		t1 = term1()
+		if f['type'] == t1['type'] or t1['type'] == 'void':
+			return {'type':f['type']}
+		else:
+			if f['type'] != "ERR" and t1['type'] != "ERR":
+				semanticError("matching types on both sides of a MULTOP", "unmatched types")
+			return {"type":"ERR"}
 	else:
 		syntaxError("'(', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')', 'ID', 'NUMBER', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch(['(', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')'], ['ID', 'NUMBER', 'ADDOP', 'RELOP'])
 		if tok['lexeme'] in ['not', '('] or tok['tokenType'] in ['ID', 'NUMBER']:
-			term()
+			return term()
 		return
 
 def simple_expression1():
@@ -208,61 +255,86 @@ def simple_expression1():
 	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' \
 	or tok['lexeme']=='else' or tok['lexeme']==']' or tok['lexeme']=='then' \
 	or tok['lexeme']=='do' or tok['tokenType']=='RELOP':
-		return
+		return {'type':"void"}
 	elif tok['tokenType']=='ADDOP':
 		matchByType('ADDOP')
-		term()
-		simple_expression1()
+		t=term()
+		se1=simple_expression1()
+		if t['type'] == se1['type'] or se1['type'] == 'void':
+			return {'type':t['type']}
+		else:
+			if t['type'] != 'ERR' and se1['type'] != 'ERR':
+				semanticError('matching types on both sides of the ADDOP', 'unmatched types')
+			return {'type':'ERR'}
 	else:
 		syntaxError(",', ')', ';', 'end', 'else', ']', 'then', 'do', 'RELOP' or 'ADDOP'", tok['lexeme'])
 		synch([',', ')', ';', 'end', 'else', ']', 'then', 'do'], ['RELOP', 'ADDOP'])
 		if tok['tokenType'] == 'ADDOP':
-			simple_expression1()
+			return simple_expression1()
 		return
 
 def simple_expression():
 	global tok
 	if tok['tokenType']=='ID' or tok['lexeme']=='(' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
-		term()
-		simple_expression1()
+		t=term()
+		se1=simple_expression1()
+		if t['type'] == se1['type'] or se1['type'] == 'void':
+			return {'type':t['type']}
+		else:
+			if t['type'] != 'ERR' and se1['type'] != 'ERR':
+				semanticError('matching types on both sides of the ADDOP', 'unmatched types')
+			return {'type':'ERR'}
 	elif tok['lexeme']=='+' or tok['lexeme']=='-':
 		sign()
-		term()
-		simple_expression1()
+		t=term()
+		se1=simple_expression1()
+		if t['type'] == se1['type'] or se1['type'] == 'void':
+			return {'type':t['type']}
+		else:
+			if t['type'] != 'ERR' and se1['type'] != 'ERR':
+				semanticError('matching types on both sides of the ADDOP', 'unmatched types')
+			return {'type':'ERR'}
 	else:
 		syntaxError("'(', '+', '-', 'not', 'ID' or 'NUMBER'", tok['lexeme'])
 		synch(['(', '+', '-', 'not'], ['ID', 'NUMBER'])
 		if tok['lexeme'] in ['(', 'not', '+', '-'] or tok['tokenType'] in ['NUMBER', 'ID']:
-			simple_expression()
+			return simple_expression()
 		return
 
-def expression1():
+def expression1(inherited):
 	global tok
 	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' or \
 	tok['lexeme']=='else' or tok['lexeme']==']' or tok['lexeme']=='then' or tok['lexeme']=='do':
-		return
+		return {'type':'void'}
 	elif tok['tokenType']=='RELOP':
 		matchByType('RELOP')
-		simple_expression()
+		se=simple_expression()
+		if inherited in ['INT', 'REAL'] and se['type'] in ['INT', 'REAL'] \
+		and inherited == se['type']:
+			return {'type':"BOOL"}
+		else:
+			if inherited != 'ERR' and se['type'] != 'ERR':
+				semanticError('Boolean types on both sides of a RELOP expression')
+			return {'type':'ERR'}
 	else:
 		syntaxError("',', ')', ';', 'end', 'else', ']', 'then', 'do' or RELOP", tok['lexeme'])
 		synch([',', ')', ';', 'end', 'else', ']', 'then', 'do'], ['RELOP'])
 		if tok['tokenType'] == 'RELOP':
-			expression1()
+			return expression1(inherited)
 		return
 
 def expression():
 	global tok
 	if tok['tokenType']=='ID' or tok['lexeme']=='(' or tok['lexeme']=='+' or \
 	tok['lexeme']=='-' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
-		simple_expression()
-		expression1()
-		return {'type':"BOOL"}
+		se=simple_expression()
+		e1=expression1(se['type'])
+		return {'type':se['type']}
 	else:
 		syntaxError("'(', '+', '-', 'not', 'else', 'then', 'end', 'do', ']', ',', ')', ';', 'NUMBER' or 'ID'", tok['lexeme'])
 		synch(['(', '+', '-', 'not', 'else', 'then', 'end', 'do', ']', ',', ')', ';'], ['NUMBER', 'ID'])
 		if tok['lexeme'] in ['(', 'not', '+', '-'] or tok['tokenType'] in ['ID', 'NUMBER']:
-			expression()
+			return expression()
 		return
 
 def expression_list1():
@@ -298,7 +370,7 @@ def variable1():
 	or tok['lexeme']=='else' or tok['lexeme']==']' or tok['tokenType']=='ASSIGNOP' or \
 	tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or \
 	tok['lexeme']=='then' or tok['lexeme']=='do':
-		return
+		return {'type':'void'}
 	elif tok['lexeme']=='[':
 		matchByLexeme('[')
 		expression()
@@ -306,7 +378,7 @@ def variable1():
 	else:
 		syntaxError("'[', 'else', 'end', 'then', 'do', ']', ',', ')', ';', 'ASSIGNOP', 'MULTOP', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch(['[', 'else', 'end', 'then', 'do', ']', ',', ')', ';'], ['ASSIGNOP', 'MULTOP', 'ADDOP', 'RELOP'])
-		variable1()
+		return variable1()
 
 def variable():
 	global tok
