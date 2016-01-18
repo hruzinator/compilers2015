@@ -10,4 +10,11 @@
 
 {aVar ( 17 *  not ( - bVar [23 + 17 <= 90]), dVar(54) + cVar )}
 
-not not (5<6.0)
+{not not (5<6.0)}
+
+{valid subset test}
+{(-8<2*7+4)}
+[8]
+
+{invalid subset test}
+{(-8*not 7+4)}

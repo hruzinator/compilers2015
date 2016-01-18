@@ -27,12 +27,12 @@ def setup(l, rwt, lf):
 def finish():
 	if hasSyntaxErrors is True:
 		print "Syntax Analysis completed with errors"
-		sys.exit()
+		return
 	else:
 		print "Syntax Analysis is complete"
 	if hasSemanticErrors is True:
 		print "Semantic analysis completed with errors"
-		sys.exit()
+		return
 	else:
 		print "Semantic Analysis is complete"
 
@@ -185,7 +185,7 @@ def factor():
 	elif tok['tokenType']=='ID':
 		idType = getType(matchByType('ID'))
 		f1=factor1(idType)
-		if f1['type']=idType:
+		if f1['type']==idType:
 			return {'type':f1['type']}
 		#TODO elif function calls
 		else:
@@ -197,7 +197,7 @@ def factor():
 		numTok = matchByType('NUMBER')
 		if numTok['attribute'] is 'intType':
 			return {'type':"INT"}
-		else #reals and long reals
+		else: #reals and long reals
 			return {'type':"REAL"}
 
 	else:
@@ -237,7 +237,7 @@ def term():
 	if tok['lexeme']=='(' or tok['lexeme']=='not' or tok['tokenType']=='ID' or tok['tokenType']=='NUMBER':
 		f = factor()
 		t1 = term1()
-		if f['type'] == t1['type'] or t1['type'] == 'void':
+		if f['type'] == t1['type'] or t1['type'] == 'VOID':
 			return {'type':f['type']}
 		else:
 			if f['type'] != "ERR" and t1['type'] != "ERR":
@@ -761,5 +761,6 @@ def parse():
 	global tok
 	tok = lexer.getToken()
 	program() #starting production
-	#factor() #temporary start production
+	#factor() #temporary test start production
+	#variable1() #temporary test start production
 	matchByType('EOF')
