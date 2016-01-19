@@ -107,7 +107,7 @@ def matchByType(t):
 	assert type(tok) is dict
 	if tok['tokenType']==t:
 		if tok['tokenType']!='EOF': #do not overrun the buffer
-			# print "matched: " + str(tok)
+			print "matched: " + str(tok)
 			tempTok = tok
 			tok = lexer.getToken()
 			return tempTok
@@ -185,6 +185,7 @@ def factor():
 	elif tok['tokenType']=='ID':
 		idType = getType(matchByType('ID'))
 		f1=factor1(idType)
+		print f1
 		if f1['type']==idType:
 			return {'type':f1['type']}
 		#TODO elif function calls
@@ -364,7 +365,7 @@ def expression_list():
 			expression_list()
 		return
 
-def variable1():
+def variable1(inherited):
 	global tok
 	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' \
 	or tok['lexeme']=='else' or tok['lexeme']==']' or tok['tokenType']=='ASSIGNOP' or \
@@ -378,13 +379,14 @@ def variable1():
 	else:
 		syntaxError("'[', 'else', 'end', 'then', 'do', ']', ',', ')', ';', 'ASSIGNOP', 'MULTOP', 'ADDOP' or 'RELOP'", tok['lexeme'])
 		synch(['[', 'else', 'end', 'then', 'do', ']', ',', ')', ';'], ['ASSIGNOP', 'MULTOP', 'ADDOP', 'RELOP'])
-		return variable1()
+		return variable1(inherited)
 
 def variable():
 	global tok
 	if tok['tokenType']=='ID':
-		matchByType('ID')
-		variable1()
+		idType = getType(matchByType('ID'))
+		variable1(idType)
+
 	else:
 		syntaxError("'ID' or 'ASSIGNOP'", tok['lexeme'])
 		synch([], ['ID', 'ASSIGNOP'])
