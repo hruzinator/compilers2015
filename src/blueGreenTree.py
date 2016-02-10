@@ -42,7 +42,8 @@ returns True if a new blue node was added.
 Returns False if there was a name conflict
 '''
 def checkAddBlueNode(lexeme, nodeType):
-	assert nodeType in ['PPARAM', 'FPINT', 'FPREAL', 'FPAINT', 'FPAREAL', 'INT', 'REAL', 'AINT', 'AREAL']
+	assert nodeType in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP',\
+	 					'intNum', 'realNum', 'intNumArray', 'realNumArray']
 	assert type(lexeme) is str
 	#check type
 	for node in callStack[-1].subNodes:
@@ -53,7 +54,7 @@ def checkAddBlueNode(lexeme, nodeType):
 		return False
 	#add type
 	callStack[-1].subNodes.append(BlueNode(lexeme, nodeType))
-	if nodeType in ['PPARAM', 'FPINT', 'FPREAL', 'FPAINT', 'FPAREAL']:
+	if nodeType in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP']:
 		#we can update the number of params in above green node
 		callStack[-1].addParam()
 		 #TODO perhaps more internal checks here (like making sure params are before

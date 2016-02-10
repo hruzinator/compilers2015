@@ -3,17 +3,17 @@ import blueGreenTree as bgTree
 bgTree.checkAddGreenNode('aProg', 'PNAME')
 bgTree.checkAddBlueNode('input', 'PPARAM')
 bgTree.checkAddBlueNode('output', 'PPARAM')
-bgTree.checkAddBlueNode('a', 'INT')
-bgTree.checkAddBlueNode('b', 'AREAL')
+bgTree.checkAddBlueNode('a', 'intNum')
+bgTree.checkAddBlueNode('b', 'realNumArray')
 print bgTree.getType('a')
 bgTree.checkAddGreenNode('f1', 'FNAME')
-bgTree.checkAddBlueNode('a', 'FPINT')
-bgTree.checkAddBlueNode('b', 'FPREAL')
-bgTree.checkAddBlueNode('c', 'REAL')
+bgTree.checkAddBlueNode('a', 'intNumFP')
+bgTree.checkAddBlueNode('b', 'realNumFP')
+bgTree.checkAddBlueNode('c', 'realNum')
 print bgTree.getType('a')
 bgTree.checkAddGreenNode('f2', 'FNAME')
-bgTree.checkAddBlueNode('x', 'FPAINT')
-bgTree.checkAddBlueNode('y', 'FPREAL')
+bgTree.checkAddBlueNode('x', 'intNumArrayFP')
+bgTree.checkAddBlueNode('y', 'realNumFP')
 print bgTree.getType('a')
 print bgTree.getGreenNodeTypes('aProg')
 print bgTree.getGreenNodeTypes('f1')
@@ -24,21 +24,21 @@ bgTree.popStack()
 print bgTree.getType('a')
 print bgTree.getType('bogusVar')
 bgTree.checkAddGreenNode('f3', 'FNAME')
-bgTree.checkAddBlueNode('c', 'FPINT')
-bgTree.checkAddBlueNode('c', 'REAL')
+bgTree.checkAddBlueNode('c', 'intNumFP')
+bgTree.checkAddBlueNode('c', 'realNum')
 print bgTree.getType('a')
 
 '''
 expected output
 
-INT
-FPINT
-FPINT
-[PPARAM, PPARAM]
-[FPINT, FPREAL]
-[FPAINT, FPREAL]
-FPINT
-INT
+intNum
+intNumFP
+intNumFP
+['PPARAM', 'PPARAM']
+['intNumFP', 'realNumFP']
+['intNumArrayFP', 'realNumFP']
+intNumFP
+intNum
 ERR
-INT
+intNum
 '''
