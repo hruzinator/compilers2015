@@ -52,17 +52,6 @@ def synch(lexemes, types):
 		tok = lexer.getToken()
 
 '''
-Gets the type of an identifier token
-'''
-def getType(token):
-	if token['tokenType'] is 'ID':
-		#TODO return the type of the ID
-		return {'type':'Integer'}
-	else:
-		syntaxError('an identifier to be declared prior to use', 'an undefined identifier')
-		return {'type':'ERR'}
-
-'''
 Checks the actualList array of types against the expected array of types, which 
 should be provided by a blueGreenTree lookup of the identifier.
 
@@ -72,11 +61,11 @@ def checkExpList(actualList, identifier):
 	if actualList is 'ERR':
 		return False
 	assert type(actualList) is list and type(identifier) is str
-	expected = bgTree.getGreenNodeTypes()
+	expected = bgTree.getGreenNodeTypes(identifier)
 	if expected == "ERR":
-		#XXX should we be throwing a semantic error instead?
-		print "Internal Error! Trying to check the expression list for an identifier that does not exist."
-		assert False
+		#XXX should we be throwing an internal error here?
+		semanticError('a call was made to a function that does not exist', '')
+		return False
 	assert type(expected) is list
 	return actualList == expected
 
@@ -122,7 +111,7 @@ def matchByType(t):
 	assert type(tok) is dict
 	if tok['tokenType']==t:
 		if tok['tokenType']!='EOF': #do not overrun the buffer
-			print "matched: " + str(tok)
+			# print "matched: " + str(tok)
 			tempTok = tok
 			tok = lexer.getToken()
 			return tempTok
@@ -159,7 +148,7 @@ def factor1(inherited):
 	or tok['lexeme']=='else' or tok['lexeme']=='[' or tok['lexeme']==']' or \
 	tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' \
 	or tok['lexeme']=='then' or tok['lexeme']=='do':
-		var1 = variable1(getType(inherited))
+		var1 = variable1(inherited)
 		return {'type':var1['type']}
 	elif tok['lexeme']=='(':
 		matchByLexeme('(')
@@ -203,11 +192,15 @@ def factor():
 
 	elif tok['tokenType']=='ID':
 		idTok = matchByType('ID')
-		f1=factor1(idTok)
-		print f1
-		if f1['type']==idTok['tokenType']:
+		idType = bgTree.getType(idTok['lexeme'])
+		if idType is 'ERR':
+			semanticError('The identifier ' + idTok['lexeme'] + ' has not been initialized yet or is not in the current scope', '')
+		f1=factor1(idType)
+		print "inside factor. Here is the return value of f1: " + str(f1)
+		if type(f1) is type([]) and idType is 'FNAME': #function calls
+			return {'type': getGreenNodeReturnType(idTok['lexeme'])} #return the return type of the function
+		elif f1['type']==idTok['tokenType']: #anything else that went to variable1 (arrays, ints, reals, etc.)
 			return {'type':f1['type']}
-		#TODO elif function calls
 		else:
 			if f1['type'] != "ERR":
 				semanticError("BOOL type", f1['type'])
@@ -426,9 +419,9 @@ def variable1(inherited):
 def variable():
 	global tok
 	if tok['tokenType']=='ID':
-		idType = getType(matchByType('ID'))
+		idType = bgTree.getType(matchByType('ID')['lexeme'])
 		variable1(idType)
-
+		return {'type':idType}
 	else:
 		syntaxError("'ID' or 'ASSIGNOP'", tok['lexeme'])
 		synch([], ['ID', 'ASSIGNOP'])
@@ -439,34 +432,54 @@ def variable():
 def statement1():
 	global tok
 	if tok['lexeme']==';' or tok['lexeme']=='end':
-		return
+		return {'type':'VOID'}
 	elif tok['lexeme']=='else':
 		matchByLexeme('else')
-		statement()
+		s = statement()
+		return {'type':s['type']}
 	else:
 		syntaxError("end, else", tok['lexeme'])
 		synch([';', 'end', 'else'], [])
-		statement1()
+		return statement1()
 
 def statement():
 	global tok
 	if tok['lexeme']=='begin':
-		compound_statement()
+		cs = compound_statement()
+		return {'type':cs['type']}
 	elif tok['tokenType']=='ID':
-		variable()
+		v = variable()
 		matchByType('ASSIGNOP')
-		expression()
+		e = expression()
+		if v['type'] == e['type']:
+			return {'type': e['type']}
+		else:
+			if v['type'] != 'ERR' and e['type'] != 'ERR':
+				semanticError('a valid ASSIGNOP expression', 'an invalid ASSIGNOP expression')
+			return {'type':"ERR"}
 	elif tok['lexeme']=='if':
 		matchByLexeme('if')
-		expression()
+		e = expression()
 		matchByLexeme('then')
-		statement()
-		statement1()
+		s = statement()
+		s1 = statement1()
+		if e['type'] == 'BOOL':
+			return {'type':s1['type']}
+		else:
+			if e['type'] != 'ERR' and s['type'] != 'ERR' and s1['type'] != 'ERR':
+				semanticError('a valid if statement', 'an invalid if statement')
+			return {'type':'ERR'}
 	elif tok['lexeme']=='while':
 		matchByLexeme('while')
-		expression()
+		e = expression()
 		matchByLexeme('do')
-		statement()
+		s = statement()
+		if e['type'] == 'BOOL':
+			return {'type':'void'}
+		else:
+			if e['type'] != 'ERR':
+				semanticError('a valid while statement', 'an invalid while expression')
+			return {'type':'ERR'}
 	else:
 		syntaxError("'begin', 'if', 'while', 'else', 'end' or ID", tok['lexeme'])
 		synch(['begin', 'if', 'while', 'else', 'end'], ['ID'])
@@ -533,9 +546,12 @@ def parameter_list1():
 		return
 	elif tok['lexeme']==';':
 		matchByLexeme(";")
-		matchByType("ID")
+		i = matchByType("ID")
 		matchByLexeme(":")
-		typeProd()
+		t = typeProd()
+		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type']+'FP') #converts type to "function parameter type"
+		if not noNameConflict:
+			semanticError('the identifier ' + i['lexeme'] + ' has already been defined in the scope')
 		parameter_list1()
 	else:
 		syntaxError("')' or ';'", tok['lexeme'])
@@ -546,10 +562,14 @@ def parameter_list1():
 def parameter_list():
 	global tok
 	if tok['tokenType']=="ID":
-		matchByType('ID')
+		i = matchByType('ID')
 		matchByLexeme(':')
-		typeProd()
+		t = typeProd()
+		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type']+'FP') #converts type to "function parameter type"
+		if not noNameConflict:
+			semanticError('the identifier ' + i['lexeme'] + ' has already been defined in the scope')
 		parameter_list1()
+		return
 	else:
 		syntaxError(") or ID", tok['lexeme'])
 		synch([')'], ['ID'])
@@ -564,31 +584,40 @@ def subprogram_head1():
 		parameter_list()
 		matchByLexeme(')')
 		matchByLexeme(':')
-		standard_type()
+		st = standard_type()
 		matchByLexeme(';')
+		return {'type': st['type']}
 	elif tok['lexeme']==':':
 		matchByLexeme(':')
-		standard_type()
+		st = standard_type()
 		matchByLexeme(';')
+		return {'type': st['type']}
 	else:
 		syntaxError("'(', ':', or 'var'", tok['lexeme'])
 		synch(['(', ':', 'var'], [])
 		if tok['lexeme']!='var':
-			subprogram_head1()
-		return
+			return subprogram_head1()
+		return {'type': 'ERR'} #TODO is this what we are supposed to be doing?
 
 def subprogram_head():
 	global tok
 	if tok['lexeme']=='function':
 		matchByLexeme('function')
-		matchByType('ID')
-		subprogram_head1()
+		i = matchByType('ID')
+		noTypeConflict = bgTree.checkAddGreenNode(i['lexeme'], 'FNAME')
+		if not noTypeConflict:
+			semanticError('A type conflict. The name ' + i['lexeme'] + \
+				' was already defined in the scope', '')
+		sh = subprogram_head1()
+		if noTypeConflict:
+			bgTree.setGreenNodeReturnType(i['lexeme'], sh['type'])
+		return {'type': sh['type']}
 	else:
 		syntaxError("'function', 'var', or 'begin'", tok['lexeme'])
 		synch(['function', 'var', 'begin'], [])
 		if tok['lexeme']=='function':
-			subprogram_head()
-		return
+			return subprogram_head()
+		return {'type':'ERR'} #TODO is this what we are supposed to be doing?
 
 def subprogram_declaration1_1():
 	global tok
@@ -663,19 +692,22 @@ def standard_type():
 	global tok
 	if tok['lexeme']=='integer':
 		matchByLexeme('integer')
+		return {'type':'intNum'}
 	elif tok['lexeme']=='real':
 		matchByLexeme('real')
+		return {'type': 'realNum'}
 	else:
 		syntaxError("'integer', 'real', ';', or ')'", tok['lexeme'])
 		synch(['integer', 'real', ';', ')'], [])
 		if tok['lexeme'] in ['integer', 'real']:
-			standard_type()
-		return
+			return standard_type()
+		return {'type': 'ERR'} #TODO is this what we should be doing?
 
 def typeProd():
 	global tok
 	if tok['lexeme']=='integer' or tok['lexeme']=='real':
-		standard_type()
+		st = standard_type()
+		return {'type': st['type']}
 	elif tok['lexeme']=='array':
 		matchByLexeme('array')
 		matchByLexeme('[')
@@ -684,22 +716,29 @@ def typeProd():
 		matchByType('NUMBER')
 		matchByLexeme(']')
 		matchByLexeme('of')
-		standard_type()
+		st = standard_type()
+		if st['type'] is not 'ERR':
+			return {'type': st['type']+'Array'} #converts standard type to array type
+		else:
+			return {'type':'ERR'}
 	else:
 		syntaxError("'integer', 'real', 'array', ';', or ')'", tok['lexeme'])
 		synch(['integer', 'real', 'array', ';', ')'], [])
 		if tok['lexeme'] in ['integer', 'real', 'array']:
-			typeProd()
-		return
+			return typeProd()
+		return {'type':'ERR'} #TODO is this what we should be doing?
 
 def declarations1():
 	global tok
 	if tok['lexeme']=='var':
 		matchByLexeme('var')
-		matchByType('ID')
+		i = matchByType('ID')
 		matchByLexeme(':')
-		typeProd()
+		t = typeProd()
 		matchByLexeme(';')
+		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'])
+		if not noNameConflict:
+			semanticError('the identifier ' + i['lexeme'] + ' has already been used')
 		declarations1()
 	elif tok['lexeme']=='function' or tok['lexeme']=='begin':
 		return
@@ -713,10 +752,13 @@ def declarations():
 	global tok
 	if tok['lexeme']=='var':
 		matchByLexeme('var')
-		matchByType('ID')
+		i = matchByType('ID')
 		matchByLexeme(":")
-		typeProd()
+		t = typeProd()
 		matchByLexeme(";")
+		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'])
+		if not noNameConflict:
+			semanticError('the identifier ' + i['lexeme'] + ' has already been used')
 		declarations1()
 	else:
 		syntaxError("'var', 'function', or 'begin'", tok['lexeme'])
@@ -729,7 +771,10 @@ def identifier_list1():
 	global tok
 	if tok['lexeme']==",":
 		matchByLexeme(',')
-		matchByType('ID')
+		i = matchByType('ID')
+		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], 'PPARAM')
+		if not noNameConflict:
+			semanticError('the identifier ' + i['lexeme'] + ' has alrady been used');
 	elif tok['lexeme']==")":	
 		return
 	else:
@@ -741,7 +786,10 @@ def identifier_list1():
 def identifier_list():
 	global tok
 	if tok['tokenType']=="ID":
-		matchByType('ID')
+		i = matchByType('ID')
+		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], 'PPARAM')
+		if not noNameConflict:
+			semanticError('the identifier ' + i['lexeme'] + ' has alrady been used');
 		identifier_list1()
 	else:
 		syntaxError("')' or 'ID'", tok['lexeme'])
@@ -788,12 +836,16 @@ def program():
 	#TODO one unified way of matching tokens
 	if tok['lexeme']=='program':
 		matchByLexeme('program')
-		matchByType('ID')
+		i = matchByType('ID')
+		noNameConflict = bgTree.checkAddGreenNode(i['lexeme'], 'PNAME')
+		if not noNameConflict:
+			semanticError('the identifier ' + i['lexeme'] + ' has alrady been used');
 		matchByLexeme('(')
 		identifier_list()
 		matchByLexeme(')')
 		matchByLexeme(';')
 		program1()
+		return
 	else:
 		syntaxError("program", tok['lexeme'])
 		synch(['program'], [])
