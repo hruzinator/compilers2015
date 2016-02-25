@@ -196,11 +196,12 @@ def factor():
 		if idType is 'ERR':
 			semanticError('The identifier ' + idTok['lexeme'] + ' has not been initialized yet or is not in the current scope', '')
 		f1=factor1(idType)
-		print "inside factor. Here is the return value of f1: " + str(f1)
 		if type(f1) is type([]) and idType is 'FNAME': #function calls
 			return {'type': getGreenNodeReturnType(idTok['lexeme'])} #return the return type of the function
-		elif f1['type']==idTok['tokenType']: #anything else that went to variable1 (arrays, ints, reals, etc.)
-			return {'type':f1['type']}
+		elif idType in ['intNumArray', 'realNumArray', 'intNumArrayFP', 'realNumArrayFP'] and f1['type'] == idType: #came from variable1 and was an array
+			return {'type':idType}
+		elif idType in ['intNum', 'realNum', 'intNumFP', 'realNumFP'] and f1['type'] == 'VOID': #came from variable1 and was an intNum or a realNum
+			return {'type':idType}
 		else:
 			if f1['type'] != "ERR":
 				semanticError("BOOL type", f1['type'])
@@ -211,7 +212,7 @@ def factor():
 		if numTok['attribute'] is 'intType':
 			return {'type':"INT"}
 		else: #reals and long reals
-			return {'type':"REAL"}
+			return {'type':"realNum"}
 
 	else:
 		syntaxError("'(', ')', 'not', ';', 'else', 'end', 'then', 'do', ']', ',', ')', 'NUMBER', 'MULTOP', 'ADDOP' or 'RELOP'", tok['lexeme'])
@@ -235,8 +236,7 @@ def term1():
 			return {'type':"ERR"}
 	elif tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or tok['lexeme']==';' \
 	or tok['lexeme']=='else' or tok['lexeme']=='end' or tok['lexeme']=='then' or \
-	tok['lexeme']=='do' or tok['lexeme']==']' or tok['lexeme']==',' or tok['lexeme']==')' \
-	or tok['tokenType']=='EOF': #TODO REMOVE EOF from term1! For testing only!!!
+	tok['lexeme']=='do' or tok['lexeme']==']' or tok['lexeme']==',' or tok['lexeme']==')':
 		return {'type':"VOID"}
 	else:
 		syntaxError("';', 'else', 'end', 'then', 'do', ']', ',', ')', 'ADDOP', 'RELOP' or 'MULTOP'", tok['lexeme'])
@@ -268,12 +268,12 @@ def simple_expression1():
 	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' \
 	or tok['lexeme']=='else' or tok['lexeme']==']' or tok['lexeme']=='then' \
 	or tok['lexeme']=='do' or tok['tokenType']=='RELOP':
-		return {'type':"void"}
+		return {'type':"VOID"}
 	elif tok['tokenType']=='ADDOP':
 		matchByType('ADDOP')
 		t=term()
 		se1=simple_expression1()
-		if t['type'] == se1['type'] or se1['type'] == 'void':
+		if t['type'] == se1['type'] or se1['type'] == 'VOID':
 			return {'type':t['type']}
 		else:
 			if t['type'] != 'ERR' and se1['type'] != 'ERR':
@@ -291,7 +291,7 @@ def simple_expression():
 	if tok['tokenType']=='ID' or tok['lexeme']=='(' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
 		t=term()
 		se1=simple_expression1()
-		if t['type'] == se1['type'] or se1['type'] == 'void':
+		if t['type'] == se1['type'] or se1['type'] == 'VOID':
 			return {'type':t['type']}
 		else:
 			if t['type'] != 'ERR' and se1['type'] != 'ERR':
@@ -301,7 +301,7 @@ def simple_expression():
 		sign()
 		t=term()
 		se1=simple_expression1()
-		if t['type'] == se1['type'] or se1['type'] == 'void':
+		if t['type'] == se1['type'] or se1['type'] == 'VOID':
 			return {'type':t['type']}
 		else:
 			if t['type'] != 'ERR' and se1['type'] != 'ERR':
@@ -318,16 +318,17 @@ def expression1(inherited):
 	global tok
 	if tok['lexeme']==',' or tok['lexeme']==')' or tok['lexeme']==';' or tok['lexeme']=='end' or \
 	tok['lexeme']=='else' or tok['lexeme']==']' or tok['lexeme']=='then' or tok['lexeme']=='do':
-		return {'type':'void'}
+		return {'type':'VOID'}
 	elif tok['tokenType']=='RELOP':
 		matchByType('RELOP')
 		se=simple_expression()
-		if inherited in ['INT', 'REAL'] and se['type'] in ['INT', 'REAL'] \
-		and inherited == se['type']:
+		if inherited in ['intNum', 'realNum', 'intNumFP', 'realNumFP'] and se['type'] in ['intNum', 'realNum', 'intNumFP', 'realNumFP'] \
+		and inherited[:4] == se['type'][:4]: #check first 5 chars because I'm lazy. intNum can match up with intNumFP
 			return {'type':"BOOL"}
 		else:
 			if inherited != 'ERR' and se['type'] != 'ERR':
-				semanticError('Boolean types on both sides of a RELOP expression')
+				print 'e1 error. Here\'s what we know: se type = ' + se['type'] + ' and inherited is ' + inherited
+				semanticError('Boolean types on both sides of a RELOP expression', '')
 			return {'type':'ERR'}
 	else:
 		syntaxError("',', ')', ';', 'end', 'else', ']', 'then', 'do' or RELOP", tok['lexeme'])
@@ -396,7 +397,7 @@ def variable1(inherited):
 	or tok['lexeme']=='else' or tok['lexeme']==']' or tok['tokenType']=='ASSIGNOP' or \
 	tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' or \
 	tok['lexeme']=='then' or tok['lexeme']=='do':
-		return {'type':'void'}
+		return {'type':'VOID'}
 	elif tok['lexeme']=='[':
 		matchByLexeme('[')
 		e = expression()
@@ -475,7 +476,7 @@ def statement():
 		matchByLexeme('do')
 		s = statement()
 		if e['type'] == 'BOOL':
-			return {'type':'void'}
+			return {'type':'VOID'}
 		else:
 			if e['type'] != 'ERR':
 				semanticError('a valid while statement', 'an invalid while expression')
