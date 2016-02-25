@@ -7,7 +7,7 @@ class GreenNode:
 		self.returnType = None #for Functions only!
 
 	def addParam(self):
-		print "Added a parameter to the " + self.nodeLex + " green node"
+		#print "Added a parameter to the " + self.nodeLex + " green node"
 		self.numParams += 1
 
 	def getParamTypes(self):
@@ -37,7 +37,7 @@ def checkAddGreenNode(lexeme, nodeType):
 			return False
 	#add type
 	callStack.append(GreenNode(lexeme, nodeType))
-	print 'Added GREEN node with name: ' + lexeme
+	#print 'Added GREEN node with name: ' + lexeme
 	return True
 
 '''
@@ -65,7 +65,7 @@ def checkAddBlueNode(lexeme, nodeType):
 		callStack[-1].addParam()
 		 #TODO perhaps more internal checks here (like making sure params are before
 		 #local vars, and that PPARAMS are matched with PNAME green nodes, etc.)?
-	print 'Added BLUE node with name: ' + lexeme
+	#print 'Added BLUE node with name: ' + lexeme
 	return True
 
 '''

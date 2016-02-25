@@ -154,7 +154,7 @@ def factor1(inherited):
 		matchByLexeme('(')
 		elAttr = expression_list()
 		matchByLexeme(')')
-		if checkExpList(elAttr['type'], inherited['lexeme']):
+		if inherited is not 'ERR' and checkExpList(elAttr['type'], inherited['lexeme']):
 			return elAttr
 		else:
 			if elAttr['type'] is not 'ERR':
@@ -327,7 +327,7 @@ def expression1(inherited):
 			return {'type':"BOOL"}
 		else:
 			if inherited != 'ERR' and se['type'] != 'ERR':
-				print 'e1 error. Here\'s what we know: se type = ' + se['type'] + ' and inherited is ' + inherited
+				#print 'e1 error. Here\'s what we know: se type = ' + se['type'] + ' and inherited is ' + inherited
 				semanticError('Boolean types on both sides of a RELOP expression', '')
 			return {'type':'ERR'}
 	else:
@@ -357,8 +357,9 @@ def expression_list1():
 		matchByLexeme(',')
 		e = expression()
 		el1 = expression_list1()
-		if type(el1['type']) is list and e['type'] is not "ERR":
-			return el1['type'].append(e.type)
+		if type(el1) is dict and type(el1['type']) is list and e['type'] is not "ERR":
+			el1['type'].append(e['type'])
+			return el1
 		else:
 			if e['type'] != 'ERR' and el1['type'] != 'ERR':
 				semanticError('a list of expressions', 'something other than a list of expressions')
@@ -378,8 +379,9 @@ def expression_list():
 	or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
 		e = expression()
 		el1 = expression_list1()
-		if type(el1['type']) is list:
-			return el1['type'].append(e.type)
+		if type(el1) is dict and type(el1['type']) is list:
+			el1['type'].append(e['type'])
+			return el1
 		else:
 			if e['type'] != 'ERR' and el1['type'] != 'ERR':
 				semanticError('a list of expressions', 'something other than a list of expressions')
@@ -436,8 +438,8 @@ def statement1():
 		return {'type':'VOID'}
 	elif tok['lexeme']=='else':
 		matchByLexeme('else')
-		s = statement()
-		return {'type':s['type']}
+		statement()
+		return
 	else:
 		syntaxError("end, else", tok['lexeme'])
 		synch([';', 'end', 'else'], [])
@@ -446,41 +448,41 @@ def statement1():
 def statement():
 	global tok
 	if tok['lexeme']=='begin':
-		cs = compound_statement()
-		return {'type':cs['type']}
+		compound_statement()
+		return
 	elif tok['tokenType']=='ID':
 		v = variable()
 		matchByType('ASSIGNOP')
 		e = expression()
 		if v['type'] == e['type']:
-			return {'type': e['type']}
+			return
 		else:
 			if v['type'] != 'ERR' and e['type'] != 'ERR':
 				semanticError('a valid ASSIGNOP expression', 'an invalid ASSIGNOP expression')
-			return {'type':"ERR"}
+			return
 	elif tok['lexeme']=='if':
 		matchByLexeme('if')
 		e = expression()
 		matchByLexeme('then')
-		s = statement()
-		s1 = statement1()
+		statement()
+		statement1()
 		if e['type'] == 'BOOL':
-			return {'type':s1['type']}
+			return
 		else:
-			if e['type'] != 'ERR' and s['type'] != 'ERR' and s1['type'] != 'ERR':
+			if e['type'] != 'ERR':
 				semanticError('a valid if statement', 'an invalid if statement')
-			return {'type':'ERR'}
+			return
 	elif tok['lexeme']=='while':
 		matchByLexeme('while')
 		e = expression()
 		matchByLexeme('do')
-		s = statement()
+		statement()
 		if e['type'] == 'BOOL':
-			return {'type':'VOID'}
+			return
 		else:
 			if e['type'] != 'ERR':
 				semanticError('a valid while statement', 'an invalid while expression')
-			return {'type':'ERR'}
+			return
 	else:
 		syntaxError("'begin', 'if', 'while', 'else', 'end' or ID", tok['lexeme'])
 		synch(['begin', 'if', 'while', 'else', 'end'], ['ID'])
