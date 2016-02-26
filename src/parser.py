@@ -209,8 +209,8 @@ def factor():
 
 	elif tok['tokenType']=='NUMBER':
 		numTok = matchByType('NUMBER')
-		if numTok['attribute'] is 'intType':
-			return {'type':"INT"}
+		if numTok['attribute'] is 'intNum':
+			return {'type':"intNum"}
 		else: #reals and long reals
 			return {'type':"realNum"}
 
@@ -228,7 +228,14 @@ def term1():
 		matchByType("MULTOP")
 		f=factor()
 		t=term1()
-		if f['type'] == t['type'] or t['type'] == 'VOID': 
+		#this is almost too hacky for my comfort
+		fMod = f['type']
+		tMod = t['type']
+		if fMod[-2:] == 'FP':
+			fMod = fMod[:-2]
+		if tMod[-2:] == 'FP':
+			tMod = tMod[:-2]
+		if fMod == tMod or t['type'] == 'VOID': 
 			return {'type': f['type']}
 		else:
 			if f['type'] != 'ERR' and t['type'] != 'ERR':
@@ -250,7 +257,13 @@ def term():
 	if tok['lexeme']=='(' or tok['lexeme']=='not' or tok['tokenType']=='ID' or tok['tokenType']=='NUMBER':
 		f = factor()
 		t1 = term1()
-		if f['type'] == t1['type'] or t1['type'] == 'VOID':
+		fMod = f['type']
+		tMod = t1['type']
+		if fMod[-2:] == 'FP':
+			fMod = fMod[:-2]
+		if tMod[-2:] == 'FP':
+			tMod = tMod[:-2]
+		if fMod == tMod or t1['type'] == 'VOID':
 			return {'type':f['type']}
 		else:
 			if f['type'] != "ERR" and t1['type'] != "ERR":
@@ -273,7 +286,13 @@ def simple_expression1():
 		matchByType('ADDOP')
 		t=term()
 		se1=simple_expression1()
-		if t['type'] == se1['type'] or se1['type'] == 'VOID':
+		tMod = t['type']
+		seMod = se1['type']
+		if tMod[-2:] == 'FP':
+			tMod = tMod[:-2]
+		if seMod[-2:] == 'FP':
+			seMod = seMod[:-2]
+		if tMod == seMod or se1['type'] == 'VOID':
 			return {'type':t['type']}
 		else:
 			if t['type'] != 'ERR' and se1['type'] != 'ERR':
@@ -291,7 +310,13 @@ def simple_expression():
 	if tok['tokenType']=='ID' or tok['lexeme']=='(' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
 		t=term()
 		se1=simple_expression1()
-		if t['type'] == se1['type'] or se1['type'] == 'VOID':
+		tMod = t['type']
+		seMod = se1['type']
+		if tMod[-2:] == 'FP':
+			tMod = tMod[:-2]
+		if seMod[-2:] == 'FP':
+			seMod = seMod[:-2]
+		if tMod == seMod or se1['type'] == 'VOID':
 			return {'type':t['type']}
 		else:
 			if t['type'] != 'ERR' and se1['type'] != 'ERR':
@@ -301,7 +326,13 @@ def simple_expression():
 		sign()
 		t=term()
 		se1=simple_expression1()
-		if t['type'] == se1['type'] or se1['type'] == 'VOID':
+		tMod = t['type']
+		seMod = se1['type']
+		if tMod[-2:] == 'FP':
+			tMod = tMod[:-2]
+		if seMod[-2:] == 'FP':
+			seMod = seMod[:-2]
+		if tMod == seMod or se1['type'] == 'VOID':
 			return {'type':t['type']}
 		else:
 			if t['type'] != 'ERR' and se1['type'] != 'ERR':
@@ -327,8 +358,7 @@ def expression1(inherited):
 			return {'type':"BOOL"}
 		else:
 			if inherited != 'ERR' and se['type'] != 'ERR':
-				#print 'e1 error. Here\'s what we know: se type = ' + se['type'] + ' and inherited is ' + inherited
-				semanticError('Boolean types on both sides of a RELOP expression', '')
+				semanticError('Identical types on both sides of a RELOP expression. Types must also be either an int or a real', '')
 			return {'type':'ERR'}
 	else:
 		syntaxError("',', ')', ';', 'end', 'else', ']', 'then', 'do' or RELOP", tok['lexeme'])
@@ -343,7 +373,10 @@ def expression():
 	tok['lexeme']=='-' or tok['lexeme']=='not' or tok['tokenType']=='NUMBER':
 		se=simple_expression()
 		e1=expression1(se['type'])
-		return {'type':se['type']}
+		if e1['type'] == 'VOID':
+			return {'type':se['type']}
+		else:
+			return {'type':e1['type']}
 	else:
 		syntaxError("'(', '+', '-', 'not', 'else', 'then', 'end', 'do', ']', ',', ')', ';', 'NUMBER' or 'ID'", tok['lexeme'])
 		synch(['(', '+', '-', 'not', 'else', 'then', 'end', 'do', ']', ',', ')', ';'], ['NUMBER', 'ID'])
@@ -454,6 +487,11 @@ def statement():
 		v = variable()
 		matchByType('ASSIGNOP')
 		e = expression()
+		#strip out function paramater descriptors to avoid false positive errors (yeah, this is super hacky. Whatever)
+		if v['type'][-2:] == 'FP':
+			v['type'] = v['type'][:-2]
+		if e['type'][-2:] == 'FP':
+			e['type'] = e['type'][:-2]
 		if v['type'] == e['type']:
 			return
 		else:
@@ -470,7 +508,7 @@ def statement():
 			return
 		else:
 			if e['type'] != 'ERR':
-				semanticError('a valid if statement', 'an invalid if statement')
+				semanticError('a valid if statement', 'an invalid if statement with an expression type of ' + e['type'])
 			return
 	elif tok['lexeme']=='while':
 		matchByLexeme('while')
