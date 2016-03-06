@@ -4,8 +4,10 @@ class GreenNode:
 		self.nodeType = nodeType
 		self.numParams = 0
 		self.subNodes = []
+		self.returnType = None #for Functions only!
 
 	def addParam(self):
+		# print "Added a parameter to the " + self.nodeLex + " green node"
 		self.numParams += 1
 
 	def getParamTypes(self):
@@ -35,6 +37,7 @@ def checkAddGreenNode(lexeme, nodeType):
 			return False
 	#add type
 	callStack.append(GreenNode(lexeme, nodeType))
+	#print 'Added GREEN node with name: ' + lexeme
 	return True
 
 '''
@@ -42,9 +45,12 @@ returns True if a new blue node was added.
 Returns False if there was a name conflict
 '''
 def checkAddBlueNode(lexeme, nodeType):
-	assert nodeType in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP',\
-	 					'intNum', 'realNum', 'intNumArray', 'realNumArray']
 	assert type(lexeme) is str
+	if nodeType not in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP',\
+	 	'intNum', 'realNum', 'intNumArray', 'realNumArray']:
+	 	print nodeType + " is not a valid type"
+	 	assert False
+
 	#check type
 	for node in callStack[-1].subNodes:
 		if node.nodeLex == lexeme:
@@ -59,6 +65,7 @@ def checkAddBlueNode(lexeme, nodeType):
 		callStack[-1].addParam()
 		 #TODO perhaps more internal checks here (like making sure params are before
 		 #local vars, and that PPARAMS are matched with PNAME green nodes, etc.)?
+	#print 'Added BLUE node with name: ' + lexeme
 	return True
 
 '''
@@ -70,9 +77,22 @@ def getType(lexeme):
 	index=len(callStack)-1
 	while index>=0:
 		gn=callStack[index]
+		if gn.nodeLex == lexeme:
+			return gn.nodeType
 		for node in gn.subNodes:
 			if node.nodeLex == lexeme:
 				return node.nodeType
+		index-=1
+	return 'ERR'
+
+def printWholeTree():
+	index=len(callStack)-1
+	print "------Whole Tree------"
+	while index>=0:
+		gn=callStack[index]
+		print "green node: " + gn.nodeLex
+		for node in gn.subNodes:
+			print "blue node: " + node.nodeLex
 		index-=1
 	return 'ERR'
 
@@ -97,6 +117,29 @@ def getGreenNodeTypes(lexeme):
 		return gn
 	else:
 		return gn.getParamTypes()
+
+def setGreenNodeReturnType(lexeme, returnType):
+	assert type(lexeme) is str and type(returnType) is str
+	if returnType not in ['intNum', 'realNum', 'intNumArray', 'realNumArray']:
+		print nodeType + " is not a valid type"
+		assert False
+	gn = getGreenNode(lexeme)
+	if gn is 'ERR':
+		assert False
+	gn.returnType = returnType
+
+def getGreenNodeReturnType(lexeme):
+	assert type(lexeme) is str
+	gn = getGreenNode(lexeme)
+	if gn is 'ERR':
+		assert False
+	if gn.returnType == None:
+		print "Internal Error! Tried to get a Green Node return type before setting it"
+		assert False
+	if gn.nodeType is "PPARAM":
+		print lexeme + " is the name of the program. You cannot get the return type for a program"
+		assert False
+	return gn.returnType
 
 
 def popStack():

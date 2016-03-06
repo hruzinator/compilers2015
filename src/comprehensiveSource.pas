@@ -6,9 +6,10 @@ program fullProg(xVar, yVar);
 	var someArray: array[1..5] of real; {inline comment}
 	
 	function gcd (a: integer; b : integer) : integer;
+	var sol: integer;
 	begin
-		if b = 0 then gcd:=a {ensure that gcd id is the same throughout}
-		else gcd := gcd(b, a mod b)
+		if b = 4 then sol:=a {ensure that gcd id is the same throughout}
+		else sol := 7
 	end;
 
 
