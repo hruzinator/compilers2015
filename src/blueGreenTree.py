@@ -7,7 +7,7 @@ class GreenNode:
 		self.returnType = None #for Functions only!
 
 	def addParam(self):
-		#print "Added a parameter to the " + self.nodeLex + " green node"
+		# print "Added a parameter to the " + self.nodeLex + " green node"
 		self.numParams += 1
 
 	def getParamTypes(self):
@@ -77,9 +77,22 @@ def getType(lexeme):
 	index=len(callStack)-1
 	while index>=0:
 		gn=callStack[index]
+		if gn.nodeLex == lexeme:
+			return gn.nodeType
 		for node in gn.subNodes:
 			if node.nodeLex == lexeme:
 				return node.nodeType
+		index-=1
+	return 'ERR'
+
+def printWholeTree():
+	index=len(callStack)-1
+	print "------Whole Tree------"
+	while index>=0:
+		gn=callStack[index]
+		print "green node: " + gn.nodeLex
+		for node in gn.subNodes:
+			print "blue node: " + node.nodeLex
 		index-=1
 	return 'ERR'
 
@@ -116,9 +129,12 @@ def setGreenNodeReturnType(lexeme, returnType):
 	gn.returnType = returnType
 
 def getGreenNodeReturnType(lexeme):
-	assert type(lexeme) is str and type(returnType) is str
+	assert type(lexeme) is str
 	gn = getGreenNode(lexeme)
 	if gn is 'ERR':
+		assert False
+	if gn.returnType == None:
+		print "Internal Error! Tried to get a Green Node return type before setting it"
 		assert False
 	if gn.nodeType is "PPARAM":
 		print lexeme + " is the name of the program. You cannot get the return type for a program"

@@ -63,10 +63,18 @@ def checkExpList(actualList, identifier):
 	assert type(actualList) is list and type(identifier) is str
 	expected = bgTree.getGreenNodeTypes(identifier)
 	if expected == "ERR":
-		#XXX should we be throwing an internal error here?
-		semanticError('a call was made to a function that does not exist', '')
 		return False
 	assert type(expected) is list
+	for e in range(len(expected)):
+		assert type(expected[e]) is str
+		if expected[e][-2:] == 'FP':
+			expected[e] = expected[e][:-2]
+	for a in actualList:
+		assert type(a) is str
+		if a[-2:] =='FP':
+			a = a[:-2]
+	#print str(actualList) + " " + identifier
+	#print "Expected: " + str(expected)
 	return actualList == expected
 
 def syntaxError(expected, actual):
@@ -148,13 +156,13 @@ def factor1(inherited):
 	or tok['lexeme']=='else' or tok['lexeme']=='[' or tok['lexeme']==']' or \
 	tok['tokenType']=='MULTOP' or tok['tokenType']=='ADDOP' or tok['tokenType']=='RELOP' \
 	or tok['lexeme']=='then' or tok['lexeme']=='do':
-		var1 = variable1(inherited)
+		var1 = variable1(inherited['type'])
 		return {'type':var1['type']}
 	elif tok['lexeme']=='(':
 		matchByLexeme('(')
 		elAttr = expression_list()
 		matchByLexeme(')')
-		if inherited is not 'ERR' and checkExpList(elAttr['type'], inherited['lexeme']):
+		if inherited['type'] is not 'ERR' and checkExpList(elAttr['type'], inherited['name']):
 			return elAttr
 		else:
 			if elAttr['type'] is not 'ERR':
@@ -195,16 +203,16 @@ def factor():
 		idType = bgTree.getType(idTok['lexeme'])
 		if idType is 'ERR':
 			semanticError('The identifier ' + idTok['lexeme'] + ' has not been initialized yet or is not in the current scope', '')
-		f1=factor1(idType)
-		if type(f1) is type([]) and idType is 'FNAME': #function calls
-			return {'type': getGreenNodeReturnType(idTok['lexeme'])} #return the return type of the function
+		f1=factor1({'name':idTok['lexeme'], 'type':idType})
+		if type(f1['type']) is type([]) and idType is 'FNAME': #function calls
+			return {'type': bgTree.getGreenNodeReturnType(idTok['lexeme'])} #return the return type of the function
 		elif idType in ['intNumArray', 'realNumArray', 'intNumArrayFP', 'realNumArrayFP'] and f1['type'] == idType: #came from variable1 and was an array
 			return {'type':idType}
 		elif idType in ['intNum', 'realNum', 'intNumFP', 'realNumFP'] and f1['type'] == 'VOID': #came from variable1 and was an intNum or a realNum
 			return {'type':idType}
 		else:
 			if f1['type'] != "ERR":
-				semanticError("BOOL type", f1['type'])
+				semanticError("BOOL type", str(f1['type']))
 			return {'type':"ERR"}
 
 	elif tok['tokenType']=='NUMBER':
@@ -455,8 +463,11 @@ def variable1(inherited):
 def variable():
 	global tok
 	if tok['tokenType']=='ID':
-		idType = bgTree.getType(matchByType('ID')['lexeme'])
+		idTok = matchByType('ID')
+		idType = bgTree.getType(idTok['lexeme'])
 		variable1(idType)
+		if idType == "FNAME":
+			return {'type':getGreenNodeReturnType(idTok['lexeme'])}
 		return {'type':idType}
 	else:
 		syntaxError("'ID' or 'ASSIGNOP'", tok['lexeme'])
