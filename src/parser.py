@@ -601,7 +601,10 @@ def parameter_list1():
 		i = matchByType("ID")
 		matchByLexeme(":")
 		t = typeProd()
-		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type']+'FP') #converts type to "function parameter type"
+		if t['isArray'] == False:
+			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type']+'FP') #converts type to "function parameter type"
+		else:
+			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type']+'FP', t['arrayLength'])
 		if not noNameConflict:
 			semanticError('the identifier ' + i['lexeme'] + ' has already been defined in the scope')
 		parameter_list1()
@@ -617,7 +620,10 @@ def parameter_list():
 		i = matchByType('ID')
 		matchByLexeme(':')
 		t = typeProd()
-		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type']+'FP') #converts type to "function parameter type"
+		if t['isArray'] == False:
+			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type']+'FP') #converts type to "function parameter type"
+		else:
+			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type']+'FP', t['arrayLength'])
 		if not noNameConflict:
 			semanticError('the identifier ' + i['lexeme'] + ' has already been defined in the scope')
 		parameter_list1()
@@ -759,18 +765,23 @@ def typeProd():
 	global tok
 	if tok['lexeme']=='integer' or tok['lexeme']=='real':
 		st = standard_type()
-		return {'type': st['type']}
+		return {'type': st['type'], 'isArray':False}
 	elif tok['lexeme']=='array':
 		matchByLexeme('array')
 		matchByLexeme('[')
-		matchByType('NUMBER')
+		leftIndex = int(matchByType('NUMBER')['lexeme'])
 		matchByLexeme('..')
-		matchByType('NUMBER')
+		rightIndex = int(matchByType('NUMBER')['lexeme'])
 		matchByLexeme(']')
 		matchByLexeme('of')
 		st = standard_type()
 		if st['type'] is not 'ERR':
-			return {'type': st['type']+'Array'} #converts standard type to array type
+			if rightIndex < leftIndex:
+				print "Index Error! left index was " + str(leftIndex) + " and right index was " + str(rightIndex) + \
+				". Left index cannot be greater than the right index"
+				global hasSemanticErrors
+				hasSemanticErrors = True
+			return {'type': st['type']+'Array', 'isArray':True, 'arrayLength':rightIndex-leftIndex} #converts standard type to array type
 		else:
 			return {'type':'ERR'}
 	else:
@@ -788,7 +799,10 @@ def declarations1():
 		matchByLexeme(':')
 		t = typeProd()
 		matchByLexeme(';')
-		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'])
+		if t['isArray'] == False:
+			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'])
+		else: #has an array
+			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'], t['arrayLength'])
 		if not noNameConflict:
 			semanticError('the identifier ' + i['lexeme'] + ' has already been used')
 		declarations1()
@@ -808,7 +822,10 @@ def declarations():
 		matchByLexeme(":")
 		t = typeProd()
 		matchByLexeme(";")
-		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'])
+		if t['isArray'] == False:
+			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'])
+		else:
+			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'], t['arrayLength'])
 		if not noNameConflict:
 			semanticError('the identifier ' + i['lexeme'] + ' has already been used')
 		declarations1()

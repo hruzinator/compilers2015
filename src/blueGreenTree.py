@@ -5,6 +5,8 @@ class GreenNode:
 		self.numParams = 0
 		self.subNodes = []
 		self.returnType = None #for Functions only!
+		self.memOffset = 0 #project 4 variable offset calculations
+		self.memOffsetFile = None
 
 	def addParam(self):
 		# print "Added a parameter to the " + self.nodeLex + " green node"
@@ -36,15 +38,20 @@ def checkAddGreenNode(lexeme, nodeType):
 		if node.nodeLex == lexeme:
 			return False
 	#add type
-	callStack.append(GreenNode(lexeme, nodeType))
+	gn = GreenNode(lexeme, nodeType)
+	gn.memOffsetFile = open(lexeme+'offsets.txt', 'w')
+	callStack.append(gn)
 	#print 'Added GREEN node with name: ' + lexeme
 	return True
 
 '''
-returns True if a new blue node was added.
-Returns False if there was a name conflict
+Array length is an optional argument that is passed in
+in case the node type is an array type
+
+Returns True if a new blue node was added.
+Returns False if there was a name conflict.
 '''
-def checkAddBlueNode(lexeme, nodeType):
+def checkAddBlueNode(lexeme, nodeType, arrayLength=-1):
 	assert type(lexeme) is str
 	if nodeType not in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP',\
 	 	'intNum', 'realNum', 'intNumArray', 'realNumArray']:
@@ -59,7 +66,22 @@ def checkAddBlueNode(lexeme, nodeType):
 		#name cannot conflict with current green node either
 		return False
 	#add type
-	callStack[-1].subNodes.append(BlueNode(lexeme, nodeType))
+	gn = callStack[-1]
+	gn.memOffsetFile.write(lexeme + ": " + str(gn.memOffset) + "\n")
+	gn.subNodes.append(BlueNode(lexeme, nodeType))
+	if nodeType in ['intNum', 'intNumFP']:
+		gn.memOffset += 4
+	elif nodeType in ['realNum', 'realNumFP']:
+		gn.memOffset += 8
+	elif nodeType in ['intNumArray', 'intNumArrayFP']:
+		assert arrayLength != -1
+		gn.memOffset += 4*arrayLength
+	elif nodeType in ["realNumArray", "realNumArrayFP"]:
+		assert arrayLength != -1
+		gn.memOffset += 8*arrayLength
+	else:
+		print "gotta figure out what to do about PPARAMS"
+
 	if nodeType in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP']:
 		#we can update the number of params in above green node
 		callStack[-1].addParam()
@@ -141,6 +163,11 @@ def getGreenNodeReturnType(lexeme):
 		assert False
 	return gn.returnType
 
+def addArrayLength(lexeme, length):
+	assert type(lexeme) is str and type(length) is int and length >= 0
+	#TODO find blue node by lexeme
+	#modify arrayLength attribute
 
 def popStack():
+	#TODO move memory address calculation down here
 	callStack.pop()
