@@ -80,7 +80,8 @@ def checkAddBlueNode(lexeme, nodeType, arrayLength=-1):
 		assert arrayLength != -1
 		gn.memOffset += 8*arrayLength
 	else:
-		print "gotta figure out what to do about PPARAMS"
+		#TODO gotta figure out what to do about PPARAMS
+		pass
 
 	if nodeType in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP']:
 		#we can update the number of params in above green node

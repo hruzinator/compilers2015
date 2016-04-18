@@ -446,9 +446,9 @@ def variable1(inherited):
 		e = expression()
 		matchByLexeme(']')
 		if e['type'] == 'intNum':
-			if inherited == 'intNumArray':
+			if inherited.startswith('intNumArray'):
 				return {'type':'intNum'}
-			if inherited == 'realNumArray':
+			if inherited.startswith('realNumArray'):
 				return {'type':'realNum'}
 		#if we make it here, we have some sort of error
 		if e['type'] != 'ERR' and inherited != 'ERR':
@@ -465,10 +465,13 @@ def variable():
 	if tok['tokenType']=='ID':
 		idTok = matchByType('ID')
 		idType = bgTree.getType(idTok['lexeme'])
-		variable1(idType)
+		v1 = variable1(idType)
 		if idType == "FNAME":
-			return {'type':getGreenNodeReturnType(idTok['lexeme'])}
-		return {'type':idType}
+			return {'type':bgTree.getGreenNodeReturnType(idTok['lexeme'])}
+		if v1['type'] == 'VOID':
+			return {'type':idType}
+		else:
+			return {'type':v1['type']}
 	else:
 		syntaxError("'ID' or 'ASSIGNOP'", tok['lexeme'])
 		synch([], ['ID', 'ASSIGNOP'])
@@ -499,9 +502,9 @@ def statement():
 		matchByType('ASSIGNOP')
 		e = expression()
 		#strip out function paramater descriptors to avoid false positive errors (yeah, this is super hacky. Whatever)
-		if v['type'][-2:] == 'FP':
+		if v['type'].endswith('FP'):
 			v['type'] = v['type'][:-2]
-		if e['type'][-2:] == 'FP':
+		if e['type'].endswith('FP'):
 			e['type'] = e['type'][:-2]
 		if v['type'] == e['type']:
 			return
