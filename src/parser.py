@@ -206,13 +206,13 @@ def factor():
 		f1=factor1({'name':idTok['lexeme'], 'type':idType})
 		if type(f1['type']) is type([]) and idType is 'FNAME': #function calls
 			return {'type': bgTree.getGreenNodeReturnType(idTok['lexeme'])} #return the return type of the function
-		elif idType in ['intNumArray', 'realNumArray', 'intNumArrayFP', 'realNumArrayFP'] and f1['type'] == idType: #came from variable1 and was an array
+		elif idType in ['intNumArray', 'realNumArray', 'intNumArrayFP', 'realNumArrayFP'] and (f1['type'][:5]==idType[:5] or f1['type'] == 'VOID'): #came from variable1 and was an array. SUPER HACKY!
 			return {'type':idType}
 		elif idType in ['intNum', 'realNum', 'intNumFP', 'realNumFP'] and f1['type'] == 'VOID': #came from variable1 and was an intNum or a realNum
 			return {'type':idType}
 		else:
 			if f1['type'] != "ERR":
-				semanticError("BOOL type", str(f1['type']))
+				semanticError("a valid factor expression", "something else")
 			return {'type':"ERR"}
 
 	elif tok['tokenType']=='NUMBER':
