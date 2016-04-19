@@ -264,7 +264,7 @@ def handle(c):
                 buffPtr-=2
                 return None
             buffPtr+=2
-            return {'tokenType':"multop", 'lexeme':"and", 'attribute':"booleanAnd"}
+            return {'tokenType':"MULTOP", 'lexeme':"and", 'attribute':"booleanAnd"}
         else:
             buffPtr-=1
             return None

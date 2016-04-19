@@ -97,9 +97,11 @@ If the lexeme cannot be found in the current scope, ERR will be
 returned
 '''
 def getType(lexeme):
+	# printWholeTree()
 	index=len(callStack)-1
 	while index>=0:
 		gn=callStack[index]
+		print "currently checking: " + gn.nodeLex
 		if gn.nodeLex == lexeme:
 			return gn.nodeType
 		for node in gn.subNodes:

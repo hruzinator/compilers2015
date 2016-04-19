@@ -69,12 +69,12 @@ def checkExpList(actualList, identifier):
 		assert type(expected[e]) is str
 		if expected[e][-2:] == 'FP':
 			expected[e] = expected[e][:-2]
-	for a in actualList:
-		assert type(a) is str
-		if a[-2:] =='FP':
-			a = a[:-2]
-	#print str(actualList) + " " + identifier
-	#print "Expected: " + str(expected)
+	for a in range(len(actualList)):
+		assert type(actualList[a]) is str
+		if actualList[a][-2:] =='FP':
+			actualList[a] = actualList[a][:-2]
+	print identifier + ' ' + str(actualList)
+	print "Expected: " + str(expected)
 	return actualList == expected
 
 def syntaxError(expected, actual):
@@ -166,6 +166,8 @@ def factor1(inherited):
 			return elAttr
 		else:
 			if elAttr['type'] is not 'ERR':
+				# print elAttr
+				# print inherited
 				semanticError('arguments that match expected values', 'arguments that do not match expected values')
 			return {'type':"ERR"}
 	else:
@@ -200,6 +202,7 @@ def factor():
 
 	elif tok['tokenType']=='ID':
 		idTok = matchByType('ID')
+		print idTok
 		idType = bgTree.getType(idTok['lexeme'])
 		if idType is 'ERR':
 			semanticError('The identifier ' + idTok['lexeme'] + ' has not been initialized yet or is not in the current scope', '')
@@ -399,7 +402,7 @@ def expression_list1():
 		e = expression()
 		el1 = expression_list1()
 		if type(el1) is dict and type(el1['type']) is list and e['type'] is not "ERR":
-			el1['type'].append(e['type'])
+			el1['type'].insert(0, e['type'])
 			return el1
 		else:
 			if e['type'] != 'ERR' and el1['type'] != 'ERR':
@@ -421,7 +424,7 @@ def expression_list():
 		e = expression()
 		el1 = expression_list1()
 		if type(el1) is dict and type(el1['type']) is list:
-			el1['type'].append(e['type'])
+			el1['type'].insert(0, e['type'])
 			return el1
 		else:
 			if e['type'] != 'ERR' and el1['type'] != 'ERR':
@@ -504,8 +507,8 @@ def statement():
 		#strip out function paramater descriptors to avoid false positive errors (yeah, this is super hacky. Whatever)
 		if v['type'].endswith('FP'):
 			v['type'] = v['type'][:-2]
-		if e['type'].endswith('FP'):
-			e['type'] = e['type'][:-2]
+		if e['type'].endswith('Array'):
+			e['type'] = e['type'][:-5]
 		if v['type'] == e['type']:
 			return
 		else:
