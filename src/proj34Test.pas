@@ -3,6 +3,7 @@ program test (input, output);
   var a : integer;
   var b : real;
   var c : array [1..2] of integer;
+  var b : real;
 
   function fun1(x:integer; y:real; 
                   z:array [1..2] of integer; 
@@ -18,7 +19,7 @@ program test (input, output);
    function fun2(x: integer; y: integer) : real;
      var e: real;
 
-     function fun3(n: integer; z: real) : integer;
+     function fun2(n: integer; z: real) : integer;
        var e: integer;
        begin
          a:= e;
