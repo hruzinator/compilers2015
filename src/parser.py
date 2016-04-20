@@ -794,7 +794,8 @@ def typeProd():
 				". Left index cannot be greater than the right index"
 				global hasSemanticErrors
 				hasSemanticErrors = True
-			return {'type': st['type']+'Array', 'isArray':True, 'arrayLength':rightIndex-leftIndex} #converts standard type to array type
+			#XXX Assumes inclusive range
+			return {'type': st['type']+'Array', 'isArray':True, 'arrayLength':rightIndex-leftIndex+1} #converts standard type to array type
 		else:
 			return {'type':'ERR'}
 	else:
