@@ -83,11 +83,14 @@ def syntaxError(expected, actual):
 	assert type(expected) is str and type(actual) is str
 	listingFile.write("Syntax error! expecting " + expected + ", got " + actual + "\n")
 
-def semanticError(expected, actual):
+def semanticError(expected, actual=None):
 	global hasSemanticErrors
 	hasSemanticErrors = True
-	assert type(expected) is str and type(actual) is str
-	listingFile.write("Semantic error! Expecting " + expected + ", got " + actual + "\n")
+	assert type(expected) is str
+	if actual==None:
+		listingFile.write(expected)
+	else:
+		listingFile.write("Semantic error! Expecting " + expected + ", got " + actual + "\n")
 
 '''
 begin match methods
