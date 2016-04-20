@@ -39,6 +39,8 @@ def checkAddGreenNode(lexeme, nodeType):
 			return False
 	#add type
 	gn = GreenNode(lexeme, nodeType)
+	if nodeType is 'FNAME':
+		callStack[-1].subNodes.append(gn) #add to scope of parent, if not program
 	gn.memOffsetFile = open(lexeme+'offsets.txt', 'w')
 	callStack.append(gn)
 	#print 'Added GREEN node with name: ' + lexeme
@@ -99,9 +101,12 @@ returned
 def getType(lexeme):
 	# printWholeTree()
 	index=len(callStack)-1
+	# print '---The call stack is:---'
+	# for b in callStack:
+	# 	print b.nodeLex
 	while index>=0:
 		gn=callStack[index]
-		print "currently checking: " + gn.nodeLex
+		# print "currently checking: " + gn.nodeLex
 		if gn.nodeLex == lexeme:
 			return gn.nodeType
 		for node in gn.subNodes:
@@ -130,6 +135,10 @@ def getGreenNode(lexeme):
 		node=callStack[index]
 		if node.nodeLex == lexeme:
 			return node
+		else:
+			for child in node.subNodes:
+				if isinstance(child, GreenNode) and child.nodeLex == lexeme:
+					return child
 		index-=1
 	return 'ERR'
 
@@ -173,4 +182,5 @@ def addArrayLength(lexeme, length):
 
 def popStack():
 	#TODO move memory address calculation down here
+	# print 'popped ' + str(callStack[-1].nodeLex) + ' off the stack'
 	callStack.pop()

@@ -73,8 +73,8 @@ def checkExpList(actualList, identifier):
 		assert type(actualList[a]) is str
 		if actualList[a][-2:] =='FP':
 			actualList[a] = actualList[a][:-2]
-	print identifier + ' ' + str(actualList)
-	print "Expected: " + str(expected)
+	print '***Actual for ' + identifier + ': ' + str(actualList)
+	print "***Expected: " + str(expected)
 	return actualList == expected
 
 def syntaxError(expected, actual):
@@ -183,7 +183,6 @@ def factor1(inherited):
 
 def factor():
 	global tok
-
 	if tok['lexeme']=='(':
 		matchByLexeme('(')
 		e=expression()
@@ -202,15 +201,22 @@ def factor():
 
 	elif tok['tokenType']=='ID':
 		idTok = matchByType('ID')
-		print idTok
+		print '---In factor. The token we just parsed is ' + str(idTok)
 		idType = bgTree.getType(idTok['lexeme'])
+		print '---The token type, as determined from the blue/green tree, was ' + idType
 		if idType is 'ERR':
 			semanticError('The identifier ' + idTok['lexeme'] + ' has not been initialized yet or is not in the current scope', '')
 		f1=factor1({'name':idTok['lexeme'], 'type':idType})
 		if type(f1['type']) is type([]) and idType is 'FNAME': #function calls
 			return {'type': bgTree.getGreenNodeReturnType(idTok['lexeme'])} #return the return type of the function
-		elif idType in ['intNumArray', 'realNumArray', 'intNumArrayFP', 'realNumArrayFP'] and (f1['type'][:5]==idType[:5] or f1['type'] == 'VOID'): #came from variable1 and was an array. SUPER HACKY!
-			return {'type':idType}
+		elif idType in ['intNumArray', 'realNumArray', 'intNumArrayFP', 'realNumArrayFP']:
+			if f1['type'][:5]==idType[:5]: #came from variable1 and was an array. SUPER HACKY!
+				return {'type':f1['type']}
+			elif f1['type'] == 'VOID':
+				return {'type':idType}
+			else:
+				print 'We reached code we should never reach!!!'
+				assert False
 		elif idType in ['intNum', 'realNum', 'intNumFP', 'realNumFP'] and f1['type'] == 'VOID': #came from variable1 and was an intNum or a realNum
 			return {'type':idType}
 		else:
@@ -719,6 +725,7 @@ def subprogram_declaration():
 	if tok['lexeme']=='function':
 		subprogram_head()
 		subprogram_declaration1()
+		bgTree.popStack()
 	else:
 		syntaxError("'function' or ';'", tok['lexeme'])
 		synch(['function', ';'], [])
@@ -879,6 +886,7 @@ def program1_1():
 		subprogram_declarations()
 		compound_statement()
 		matchByLexeme('.')
+		bgTree.popStack()
 	elif tok['lexeme']=='begin':	
 		compound_statement()
 		matchByLexeme('.')
