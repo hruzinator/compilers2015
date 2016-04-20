@@ -73,8 +73,8 @@ def checkExpList(actualList, identifier):
 		assert type(actualList[a]) is str
 		if actualList[a][-2:] =='FP':
 			actualList[a] = actualList[a][:-2]
-	print '***Actual for ' + identifier + ': ' + str(actualList)
-	print "***Expected: " + str(expected)
+	# print '***Actual for ' + identifier + ': ' + str(actualList)
+	# print "***Expected: " + str(expected)
 	return actualList == expected
 
 def syntaxError(expected, actual):
@@ -201,9 +201,9 @@ def factor():
 
 	elif tok['tokenType']=='ID':
 		idTok = matchByType('ID')
-		print '---In factor. The token we just parsed is ' + str(idTok)
+		# print '---In factor. The token we just parsed is ' + str(idTok)
 		idType = bgTree.getType(idTok['lexeme'])
-		print '---The token type, as determined from the blue/green tree, was ' + idType
+		# print '---The token type, as determined from the blue/green tree, was ' + idType
 		if idType is 'ERR':
 			semanticError('The identifier ' + idTok['lexeme'] + ' has not been initialized yet or is not in the current scope', '')
 		f1=factor1({'name':idTok['lexeme'], 'type':idType})
