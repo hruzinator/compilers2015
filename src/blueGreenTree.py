@@ -69,7 +69,8 @@ def checkAddBlueNode(lexeme, nodeType, arrayLength=-1):
 		return False
 	#add type
 	gn = callStack[-1]
-	gn.memOffsetFile.write(lexeme + ": " + str(gn.memOffset) + "\n")
+	if nodeType is not 'PPARAM':
+		gn.memOffsetFile.write(lexeme + ": " + str(gn.memOffset) + "\n")
 	gn.subNodes.append(BlueNode(lexeme, nodeType))
 	if nodeType in ['intNum', 'intNumFP']:
 		gn.memOffset += 4
