@@ -55,10 +55,8 @@ Returns False if there was a name conflict.
 '''
 def checkAddBlueNode(lexeme, nodeType, arrayLength=-1):
 	assert type(lexeme) is str
-	if nodeType not in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP',\
-	 	'intNum', 'realNum', 'intNumArray', 'realNumArray']:
-	 	print nodeType + " is not a valid type"
-	 	assert False
+	assert nodeType in ['PPARAM', 'intNumFP', 'realNumFP', 'intNumArrayFP', 'realNumArrayFP',\
+	 	'intNum', 'realNum', 'intNumArray', 'realNumArray']
 
 	#check type
 	for node in callStack[-1].subNodes:
@@ -116,16 +114,16 @@ def getType(lexeme):
 		index-=1
 	return 'ERR'
 
-def printWholeTree():
-	index=len(callStack)-1
-	print "------Whole Tree------"
-	while index>=0:
-		gn=callStack[index]
-		print "green node: " + gn.nodeLex
-		for node in gn.subNodes:
-			print "blue node: " + node.nodeLex
-		index-=1
-	return 'ERR'
+# def printWholeTree():
+# 	index=len(callStack)-1
+# 	print "------Whole Tree------"
+# 	while index>=0:
+# 		gn=callStack[index]
+# 		print "green node: " + gn.nodeLex
+# 		for node in gn.subNodes:
+# 			print "blue node: " + node.nodeLex
+# 		index-=1
+# 	return 'ERR'
 
 '''
 Returns ERR if green node was not found
@@ -166,14 +164,9 @@ def setGreenNodeReturnType(lexeme, returnType):
 def getGreenNodeReturnType(lexeme):
 	assert type(lexeme) is str
 	gn = getGreenNode(lexeme)
-	if gn is 'ERR':
-		assert False
-	if gn.returnType == None:
-		print "Internal Error! Tried to get a Green Node return type before setting it"
-		assert False
-	if gn.nodeType is "PPARAM":
-		print lexeme + " is the name of the program. You cannot get the return type for a program"
-		assert False
+	assert gn is not 'ERR'
+	assert gn.returnType is not None
+	assert gn.nodeType is not "PPARAM"
 	return gn.returnType
 
 def addArrayLength(lexeme, length):

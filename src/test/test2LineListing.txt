@@ -1,0 +1,142 @@
+1: 
+
+2: program test2 (input, output);
+
+3:   var a : integer;
+
+4:   var b : real;
+
+5:   var c : array [1..2] of integer;
+
+6:   var b : real;
+
+7: 
+
+8:   function fun1(x:integer; y:real; 
+Semantic error! the identifier b has already been used
+
+9:                   z:array [1..2] of integer; 
+
+10:                   q: real) : integer;
+
+11:     var d: integer;
+
+12:     begin
+
+13:       a:= 2;
+
+14:       z[a] := 4;
+
+15:       c[2] := 3;
+
+16:       fun1 := c[1]
+
+17:      end;
+
+18: 
+
+19:    function fun2(x: integer; y: integer) : real;
+
+20:      var e: real;
+
+21: 
+
+22:      function fun2(n: integer; z: real) : integer;
+Semantic error! Type Conflict. The name fun2 was already defined in the scope
+
+23:        var e: integer;
+
+24:        begin
+Semantic error! the identifier e has already been used
+
+25:          a:= e;
+Semantic error! Expecting a valid ASSIGNOP expression, got an invalid ASSIGNOP expression
+
+26:          e:= c[e];
+Semantic error! Invalid array index
+
+27:          fun3 := 3
+Semantic error! The variable 'fun3' has not been declared or is not in the current scope
+
+28:        end;
+
+29: 
+
+30:      begin
+
+31:        a:= fun1(x, e, c, b);
+Semantic error! The identifier x has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+Semantic error! The identifier e has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+
+32:        x:= fun3(c[1], e);
+Semantic error! The variable 'x' has not been declared or is not in the current scope
+Semantic error! The identifier fun3 has not been initialized yet or is not in the current scope
+Semantic error! The identifier e has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+
+33:        e := e + 4.44;
+Semantic error! The variable 'e' has not been declared or is not in the current scope
+Semantic error! The identifier e has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+
+34:        a:= (a mod y) div x;
+Semantic error! The identifier y has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+Semantic error! The identifier x has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+
+35:        while ((a >= 4) and ((b <= e) 
+Semantic error! The identifier e has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+
+36:                        or (not (a = c[a])))) do
+
+37:          begin
+
+38:            a:= c[a] + 1
+
+39:          end;
+
+40:        fun2 := 2.5 
+
+41:      end;
+
+42: 
+
+43: begin
+
+44:   b:= fun2(c[4], c[5]);
+Semantic error! The variable 'b' has not been declared or is not in the current scope
+Semantic error! The identifier fun2 has not been initialized yet or is not in the current scope
+Semantic error! The identifier c has not been initialized yet or is not in the current scope
+Semantic error! The identifier c has not been initialized yet or is not in the current scope
+
+45:   b:= fun2(c[4],2);
+Semantic error! The variable 'b' has not been declared or is not in the current scope
+Semantic error! The identifier fun2 has not been initialized yet or is not in the current scope
+Semantic error! The identifier c has not been initialized yet or is not in the current scope
+
+46:   if (a < 2) then a:= 1 else a := a + 2;
+Semantic error! The identifier a has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+Semantic error! The variable 'a' has not been declared or is not in the current scope
+Semantic error! The variable 'a' has not been declared or is not in the current scope
+Semantic error! The identifier a has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+
+47:   if (b > 4.2) then a := c[a]
+Semantic error! The identifier b has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+Semantic error! The variable 'a' has not been declared or is not in the current scope
+Semantic error! The identifier c has not been initialized yet or is not in the current scope
+Semantic error! The identifier a has not been initialized yet or is not in the current scope
+Semantic error! Expecting Valid usage of an identifier or parenthesized expression, got an invalid identifier or parenthesized expression
+
+48: end.
+
+49: 
+
+50: 
+

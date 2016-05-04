@@ -12,6 +12,7 @@ import sys
 import lexer
 import parser
 from symbolTable import symbolTable
+import os.path
 
 def printHelp():
     print "Usage:"
@@ -34,6 +35,9 @@ for l in lines:
     rwTable.insert(token)
 
 #get an array of lines
+if not os.path.isfile(sys.argv[1]):
+    print 'The file you tried to compile does not exist'
+    sys.exit()
 lines = open(sys.argv[1], "r").readlines()
 lines[-1]+='\x03'
 

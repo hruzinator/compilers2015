@@ -630,7 +630,7 @@ def getToken():
 	if type(machineResult) is dict and bool(machineResult) is True:
 	    isToken = True
 
-    #write token to token file
+    #write token to listing file
     tokenFile.write(str(lineNum).center(10) + machineResult['lexeme'].ljust(17) \
             + machineResult['tokenType'].ljust(15) + machineResult['attribute'].ljust(40) + '\n')
 

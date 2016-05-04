@@ -1,0 +1,96 @@
+1: 
+
+2: program test (input, output);
+
+3:   var a : integer;
+
+4:   var b : real;
+
+5:   var c : array [1..2] of integer;
+
+6: 
+
+7:   function fun1(x:integer; y:real; 
+
+8:                   z:array [1..2] of integer; 
+
+9:                   q: real) : integer;
+
+10:     var d: integer;
+
+11:     begin
+
+12:       a:= 2;
+
+13:       z[a] := 4;
+
+14:       c[2] := 3;
+
+15:       fun1 := c[1]
+
+16:      end;
+
+17: 
+
+18:    function fun2(x: integer; y: integer) : real;
+
+19:      var e: real;
+
+20: 
+
+21:      function fun3(n: integer; z: real) : integer;
+
+22:        var e: integer;
+
+23:        begin
+
+24:          a:= e;
+
+25:          e:= c[e];
+
+26:          fun3 := 3
+
+27:        end;
+
+28: 
+
+29:      begin
+
+30:        a:= fun1(x, e, c, b);
+
+31:        x:= fun3(c[1], e);
+
+32:        e := e + 4.44;
+
+33:        a:= (a mod y) div x;
+
+34:        while ((a >= 4) and ((b <= e) 
+
+35:                        or (not (a = c[a])))) do
+
+36:          begin
+
+37:            a:= c[a] + 1
+
+38:          end;
+
+39:        fun2 := 2.5 
+
+40:      end;
+
+41: 
+
+42: begin
+
+43:   b:= fun2(c[4], c[5]);
+
+44:   b:= fun2(c[4],2);
+
+45:   if (a < 2) then a:= 1 else a := a + 2;
+
+46:   if (b > 4.2) then a := c[a]
+
+47: end.
+
+48: 
+

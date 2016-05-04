@@ -88,7 +88,7 @@ def semanticError(expected, actual=None):
 	hasSemanticErrors = True
 	assert type(expected) is str
 	if actual==None:
-		listingFile.write(expected)
+		listingFile.write("Semantic error! " + expected + "\n")
 	else:
 		listingFile.write("Semantic error! Expecting " + expected + ", got " + actual + "\n")
 
@@ -151,7 +151,6 @@ def sign():
 			return
 		else:
 			print "An error occurred. Check your synch set"
-			assert False
 
 def factor1(inherited):
 	global tok
@@ -168,9 +167,7 @@ def factor1(inherited):
 		if inherited['type'] is not 'ERR' and checkExpList(elAttr['type'], inherited['name']):
 			return elAttr
 		else:
-			if elAttr['type'] is not 'ERR':
-				# print elAttr
-				# print inherited
+			if elAttr['type'] is not 'ERR' and inherited['type'] is not 'ERR':
 				semanticError('arguments that match expected values', 'arguments that do not match expected values')
 			return {'type':"ERR"}
 	else:
@@ -181,7 +178,6 @@ def factor1(inherited):
 			return factor1(inherited)
 		else:
 			print "An error occurred. Check your synch set"
-			assert False
 
 
 def factor():
@@ -204,11 +200,9 @@ def factor():
 
 	elif tok['tokenType']=='ID':
 		idTok = matchByType('ID')
-		# print '---In factor. The token we just parsed is ' + str(idTok)
 		idType = bgTree.getType(idTok['lexeme'])
-		# print '---The token type, as determined from the blue/green tree, was ' + idType
 		if idType is 'ERR':
-			semanticError('The identifier ' + idTok['lexeme'] + ' has not been initialized yet or is not in the current scope', '')
+			semanticError('The identifier ' + idTok['lexeme'] + ' has not been initialized yet or is not in the current scope')
 		f1=factor1({'name':idTok['lexeme'], 'type':idType})
 		if type(f1['type']) is type([]) and idType is 'FNAME': #function calls
 			return {'type': bgTree.getGreenNodeReturnType(idTok['lexeme'])} #return the return type of the function
@@ -218,13 +212,14 @@ def factor():
 			elif f1['type'] == 'VOID':
 				return {'type':idType}
 			else:
-				print 'We reached code we should never reach!!!'
-				assert False
+				if f1['type'] != 'ERR':
+					semanticError('Mismatch! Identifier ' + idTok['lexeme']  + ' is of type' + idType + ' and was followed by some illegitimate statement')
+				return {'type':'ERR'}
 		elif idType in ['intNum', 'realNum', 'intNumFP', 'realNumFP'] and f1['type'] == 'VOID': #came from variable1 and was an intNum or a realNum
 			return {'type':idType}
 		else:
 			if f1['type'] != "ERR":
-				semanticError("a valid factor expression", "something else")
+				semanticError('Valid usage of an identifier or parenthesized expression', 'an invalid identifier or parenthesized expression')
 			return {'type':"ERR"}
 
 	elif tok['tokenType']=='NUMBER':
@@ -415,7 +410,7 @@ def expression_list1():
 			return el1
 		else:
 			if e['type'] != 'ERR' and el1['type'] != 'ERR':
-				semanticError('a list of expressions', 'something other than a list of expressions')
+				semanticError('The expression list is not valid.')
 			return {'type':'ERR'}
 	elif tok['lexeme']==')':
 		return {'type':[]}
@@ -437,7 +432,7 @@ def expression_list():
 			return el1
 		else:
 			if e['type'] != 'ERR' and el1['type'] != 'ERR':
-				semanticError('a list of expressions', 'something other than a list of expressions')
+				semanticError('expecting a list of expressions')
 			return {'type':'ERR'}
 	else:
 		syntaxError("'(', '+', '-', 'not', ')', 'ID' or 'NUMBER'", tok['lexeme'])
@@ -464,7 +459,7 @@ def variable1(inherited):
 				return {'type':'realNum'}
 		#if we make it here, we have some sort of error
 		if e['type'] != 'ERR' and inherited != 'ERR':
-			semanticError('a valid array index', 'something else')
+			semanticError('Invalid array index')
 		return {'type':'ERR'}
 
 	else:
@@ -475,9 +470,13 @@ def variable1(inherited):
 def variable():
 	global tok
 	if tok['tokenType']=='ID':
+		storeVarName = tok['lexeme']
 		idTok = matchByType('ID')
 		idType = bgTree.getType(idTok['lexeme'])
 		v1 = variable1(idType)
+		if idType == 'ERR':
+			semanticError('The variable \'' + storeVarName + '\' has not been declared or is not in the current scope')
+			return {'type':'ERR'}
 		if idType == "FNAME":
 			return {'type':bgTree.getGreenNodeReturnType(idTok['lexeme'])}
 		if v1['type'] == 'VOID':
@@ -679,8 +678,8 @@ def subprogram_head():
 		i = matchByType('ID')
 		noTypeConflict = bgTree.checkAddGreenNode(i['lexeme'], 'FNAME')
 		if not noTypeConflict:
-			semanticError('A type conflict. The name ' + i['lexeme'] + \
-				' was already defined in the scope', '')
+			semanticError('Type Conflict. The name ' + i['lexeme'] + \
+				' was already defined in the scope')
 		sh = subprogram_head1()
 		if noTypeConflict:
 			bgTree.setGreenNodeReturnType(i['lexeme'], sh['type'])
@@ -890,7 +889,6 @@ def program1_1():
 		subprogram_declarations()
 		compound_statement()
 		matchByLexeme('.')
-		bgTree.popStack()
 	elif tok['lexeme']=='begin':	
 		compound_statement()
 		matchByLexeme('.')
