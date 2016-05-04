@@ -814,13 +814,13 @@ def declarations1():
 		i = matchByType('ID')
 		matchByLexeme(':')
 		t = typeProd()
-		matchByLexeme(';')
 		if t['isArray'] == False:
 			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'])
 		else: #has an array
 			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'], t['arrayLength'])
 		if not noNameConflict:
 			semanticError('the identifier ' + i['lexeme'] + ' has already been used')
+		matchByLexeme(';')
 		declarations1()
 	elif tok['lexeme']=='function' or tok['lexeme']=='begin':
 		return
@@ -837,13 +837,13 @@ def declarations():
 		i = matchByType('ID')
 		matchByLexeme(":")
 		t = typeProd()
-		matchByLexeme(";")
 		if t['isArray'] == False:
 			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'])
 		else:
 			noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], t['type'], t['arrayLength'])
 		if not noNameConflict:
 			semanticError('the identifier ' + i['lexeme'] + ' has already been used')
+		matchByLexeme(";")
 		declarations1()
 	else:
 		syntaxError("'var', 'function', or 'begin'", tok['lexeme'])
@@ -859,6 +859,7 @@ def identifier_list1():
 		i = matchByType('ID')
 		noNameConflict = bgTree.checkAddBlueNode(i['lexeme'], 'PPARAM')
 		if not noNameConflict:
+			print 'just processed the error 2'
 			semanticError('the identifier ' + i['lexeme'] + ' has alrady been used');
 	elif tok['lexeme']==")":	
 		return

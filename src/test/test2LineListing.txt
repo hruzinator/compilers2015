@@ -9,11 +9,11 @@
 5:   var c : array [1..2] of integer;
 
 6:   var b : real;
+Semantic error! the identifier b has already been used
 
 7: 
 
 8:   function fun1(x:integer; y:real; 
-Semantic error! the identifier b has already been used
 
 9:                   z:array [1..2] of integer; 
 
@@ -45,9 +45,9 @@ Semantic error! the identifier b has already been used
 Semantic error! Type Conflict. The name fun2 was already defined in the scope
 
 23:        var e: integer;
+Semantic error! the identifier e has already been used
 
 24:        begin
-Semantic error! the identifier e has already been used
 
 25:          a:= e;
 Semantic error! Expecting a valid ASSIGNOP expression, got an invalid ASSIGNOP expression

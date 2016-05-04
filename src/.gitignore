@@ -11,3 +11,4 @@ goodSourceTest.o
 comprehensiveSource.o
 testingFile.pas
 *offsets.txt
+test/*
