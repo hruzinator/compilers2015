@@ -678,7 +678,7 @@ def subprogram_head():
 		i = matchByType('ID')
 		noTypeConflict = bgTree.checkAddGreenNode(i['lexeme'], 'FNAME')
 		if not noTypeConflict:
-			semanticError('Type Conflict. The name ' + i['lexeme'] + \
+			semanticError('The name ' + i['lexeme'] + \
 				' was already defined in the scope')
 		sh = subprogram_head1()
 		if noTypeConflict:
